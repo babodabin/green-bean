@@ -48,7 +48,11 @@
   .chip{flex:0 0 auto; padding:8px 14px; border:1px solid var(--line); border-radius:20px;
     background:var(--panel); color:var(--sub); font-size:13px; font-weight:600; cursor:pointer; transition:.15s; white-space:nowrap;}
   .chip.active{background:var(--accent2); color:#fff; border-color:var(--accent2);}
-  .chips.hidden{display:none;}
+  .cities{padding:0 0 10px;}
+  .city{flex:0 0 auto; padding:8px 14px; border:1px solid var(--line); border-radius:20px;
+    background:var(--panel); color:var(--accent); font-size:13px; font-weight:700; cursor:pointer; transition:.15s; white-space:nowrap;}
+  .city.active{background:var(--pin); color:#fff; border-color:var(--pin);}
+  .row.hidden{display:none !important;}
 
   #map{flex:1; width:100%; background:#dfe6e2; position:relative;}
 
@@ -121,7 +125,8 @@
       <div class="tab" data-cont="america">아메리카</div>
       <div class="tab" data-cont="etc">기타</div>
     </div>
-    <div class="row countries" id="countries"></div>
+    <div class="row countries hidden" id="countries"></div>
+    <div class="row cities hidden" id="cities"></div>
     <div class="row chips hidden" id="chips">
       <div class="chip" data-f="basic">기본</div>
       <div class="chip" data-f="coe">COE</div>
@@ -396,13 +401,16 @@ function loadBorder(iso, styleColor, weight){
   }).catch(()=>null);
 }
 
-// 대륙 선택: 그 대륙의 모든 나라 국경 + 이름 표시 (마커/시트 없음)
+// 대륙 선택: 나라 칩만 노출 (도시/필터 숨김)
 function selectContinent(cont){
   currentCont=cont;
   currentCountry=null;
   currentFilter=null;
   currentRegions=[];
   document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+  document.getElementById('countries').classList.remove('hidden');
+  document.getElementById('cities').classList.add('hidden');
+  document.getElementById('cities').innerHTML='';
   document.getElementById('chips').classList.add('hidden');
   clearMarkers(); clearBorders(); clearCountryLabels(); closeSheet();
   renderCountries();
@@ -433,16 +441,19 @@ function renderCountries(){
   }).join('');
 }
 
-// 나라 선택: 그 나라만 국경 + 산지 마커 + 필터 노출 + 조금 멀리서
+// 나라 선택: 국경 + 산지 마커 + 도시칩 + 필터 노출
 function selectCountry(k){
   currentCountry=k;
   const c=DATA[currentCont].countries[k];
   currentRegions=c.regions;
   currentFilter=null;
   document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+  document.getElementById('countries').classList.remove('hidden');
+  document.getElementById('cities').classList.remove('hidden');
   document.getElementById('chips').classList.remove('hidden');
   clearMarkers(); clearBorders(); clearCountryLabels(); closeSheet();
   renderCountries();
+  renderCities();
 
   if(c.iso && !c.noBorder) loadBorder(c.iso,'#a9744f',2.5);
   c.regions.forEach(r=>{
@@ -452,6 +463,14 @@ function selectCountry(k){
     markers[r.id]={pin,label};
   });
   map.setView(c.center,c.zoom,{animate:true});
+}
+
+// 도시(산지) 칩 렌더
+function renderCities(){
+  const box=document.getElementById('cities');
+  if(!currentRegions.length){ box.innerHTML=''; return; }
+  box.innerHTML=currentRegions.map(r=>
+    '<div class="city" data-r="'+r.id+'">'+r.title+'</div>').join('');
 }
 
 // 도시(산지) 강조: 선택된 것만 진하게, 나머지 흐리게
@@ -490,7 +509,7 @@ const sheet=document.getElementById('sheet');
 const sheetIn=document.getElementById('sheetIn');
 const sheetScroll=document.getElementById('sheetScroll');
 const sheetNav=document.getElementById('sheetNav');
-function closeSheet(){ sheet.classList.remove('open'); clearHighlight(); }
+function closeSheet(){ sheet.classList.remove('open'); clearHighlight(); document.querySelectorAll('.city').forEach(el=>el.classList.remove('active')); }
 
 function openSheetByRegion(r){
   currentIndex=currentRegions.findIndex(x=>x.id===r.id);
@@ -524,6 +543,7 @@ function paintSheet(){
     '<span class="dot '+(i===currentIndex?'on':'')+'"></span>').join('');
   sheetScroll.scrollTop=0;
   highlight(r.id);
+  document.querySelectorAll('.city').forEach(el=>el.classList.toggle('active',el.dataset.r===r.id));
   map.setView([r.coord[0]-0.12, r.coord[1]], Math.max(map.getZoom(),7), {animate:true});
 }
 
@@ -554,6 +574,11 @@ document.getElementById('tabs').addEventListener('click',function(e){
 document.getElementById('countries').addEventListener('click',function(e){
   const c=e.target.closest('.country'); if(!c||c.classList.contains('empty')) return;
   selectCountry(c.dataset.c);
+});
+document.getElementById('cities').addEventListener('click',function(e){
+  const c=e.target.closest('.city'); if(!c) return;
+  const r=currentRegions.find(x=>x.id===c.dataset.r); if(!r) return;
+  openSheetByRegion(r);
 });
 document.getElementById('chips').addEventListener('click',function(e){
   const c=e.target.closest('.chip'); if(!c) return;
