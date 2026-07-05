@@ -230,6 +230,20 @@ const DATA = {
         facts:{"가공":"길링 바사·워시드","고도":"1,400~1,900m","품종":"티피카 계열","성격":"묵직·다크"},
         flavor:"다크초콜릿·향신료, 잘 익은 과일의 은은한 단맛, 낮은 산미와 시럽 같은 바디.",
         about:"술라웨시 중부 고지대 산지. 수마트라만큼 묵직하지만 좀 더 정제된 클린컵으로 평가된다." }
+    ]},
+    india:{ name:"인도", iso:"IND", center:[15,78], zoom:4.6, regions:[
+      { id:"malabar", region:"말라바르 해안 · Monsooned", title:"몬순 말라바르", coord:[11.5,75.6],
+        coordFlag:"말라바르 해안 지역 근사 중심점", tags:["basic","flavor"], swatch:"#b8a05a", emoji:"🌬️",
+        beanDesc:"옅은 노란빛의 크고 부푼 생두. 몬순 계절풍에 노출시켜 색과 산을 뺀 독특한 외형.",
+        facts:{"가공":"몬순드(Monsooned)","고도":"해안 저지대 가공","품종":"인도 아라비카","성격":"흙내·무산미"},
+        flavor:"산미가 거의 없고 흙내·향신료·삼나무, 묵직한 바디와 낮은 단맛. 개성이 매우 강한 특수 프로파일.",
+        about:"'지역'이 아니라 가공 방식이다. 건조 생두를 몬순 계절풍과 습기에 수 주간 노출시켜 부풀리고 색을 뺀다. 과거 유럽으로 배로 오래 운송되던 커피 맛을 재현한 데서 유래했다." },
+      { id:"chikmagalur", region:"카르나타카 · Chikmagalur", title:"치크마갈루르", coord:[13.32,75.77],
+        coordFlag:"치크마갈루르 지역 근사 중심점", tags:["basic","flavor"], swatch:"#7a5a2e", emoji:"🫚",
+        beanDesc:"워시드 아라비카 생두. 인도 아라비카의 발상지로 알려진 산지.",
+        facts:{"가공":"워시드·내추럴","고도":"1,000~1,500m","품종":"S795·켄트 등","성격":"향신료·균형"},
+        flavor:"향신료·초콜릿·견과, 순한 산미와 둥근 바디. 인도 특유의 스파이시함이 은은하게 배어 있다.",
+        about:"바바부단기리 산지가 있는 카르나타카의 대표 아라비카 산지. 인도에 커피가 처음 심어진 곳으로 전해진다." }
     ]}
   }},
   america:{ label:"아메리카", center:[6,-72], zoom:3, countries:{
@@ -326,6 +340,26 @@ const DATA = {
         facts:{"가공":"워시드·허니","고도":"1,000~1,600m","품종":"부르봉·파카스","성격":"단맛·균형"},
         flavor:"흑설탕·초콜릿, 오렌지 산미, 둥근 바디. 안정적이고 달콤한 클래식 프로파일.",
         about:"엘살바도르 최고봉 산타아나(이야마테펙) 화산 사면 산지. 미네랄 풍부한 화산토에서 균형 잡힌 커피가 난다." }
+    ]},
+    mexico:{ name:"멕시코", iso:"MEX", center:[19,-99], zoom:4.4, regions:[
+      { id:"chiapas", region:"치아파스 · Chiapas", title:"치아파스", coord:[15.5,-92.3],
+        coordFlag:"치아파스주 근사 중심점", tags:["basic","flavor"], swatch:"#6b4a2e", emoji:"🍫",
+        beanDesc:"과테말라 접경 남부 산지. 유기농 소농 협동조합 생두가 많음.",
+        facts:{"가공":"주로 워시드","고도":"1,300~1,700m","품종":"부르봉·티피카·카투라","성격":"단맛·부드러움"},
+        flavor:"초콜릿·견과, 부드러운 산미, 캐러멜 단맛. 순하고 균형 잡힌 컵으로 유기농 로트가 많다.",
+        about:"멕시코 최대 스페셜티 산지. 과테말라와 붙어 있어 기후·품질이 비슷하며 유기농 소농 협동조합이 발달했다." },
+      { id:"oaxaca", region:"오아하카 · Oaxaca", title:"오아하카", coord:[16.9,-96.7],
+        coordFlag:"오아하카주 근사 중심점", tags:["basic","flavor"], swatch:"#8f5a3c", emoji:"🍊",
+        beanDesc:"고지대 소농 중심 산지.",
+        facts:{"가공":"주로 워시드","고도":"1,400~1,700m","품종":"부르봉·티피카","성격":"가벼움·산뜻"},
+        flavor:"캐러멜·감귤, 가벼운 바디와 산뜻한 산미. 부담 없이 마시기 좋은 클린한 프로파일.",
+        about:"멕시코 남부 산악주. 소규모 유기농 협동조합 커피가 많고, 가볍고 산뜻한 성격으로 알려져 있다." },
+      { id:"veracruz", region:"베라크루스 · Veracruz", title:"베라크루스", coord:[19.2,-96.9],
+        coordFlag:"베라크루스주 근사 중심점", tags:["basic","flavor"], swatch:"#96603a", emoji:"☕",
+        beanDesc:"멕시코 커피 재배가 시작된 역사적 산지.",
+        facts:{"가공":"주로 워시드","고도":"900~1,300m","품종":"티피카·부르봉","성격":"순함·견과"},
+        flavor:"견과·초콜릿, 순한 산미와 부드러운 바디. 저지대 로트는 특히 마일드하다.",
+        about:"멕시코만 연안의 주. 멕시코 커피 재배 역사가 시작된 곳으로, 고도에 따라 마일드~균형형 커피가 난다." }
     ]}
   }},
   etc:{ label:"기타", center:[15,-60], zoom:2.4, countries:{
@@ -364,6 +398,20 @@ const DATA = {
         facts:{"가공":"주로 워시드","고도":"900~1,700m","품종":"블루마운틴 티피카","성격":"부드러움·균형"},
         flavor:"부드럽고 깔끔한 산미, 견과·초콜릿, 은은한 단맛. 자극이 거의 없는 매끈한 균형이 특징.",
         about:"자메이카 동부 블루마운틴 산맥의 지정 구역에서만 이 이름을 쓸 수 있다. 서늘한 안개와 느린 성숙이 부드러운 컵을 만든다. '세계 3대 커피'로 꼽히지만 공식 등급이 아니라 희소성·역사에 기반한 통칭이며, 대부분이 일본으로 수출되는 것으로 알려져 있다." }
+    ]},
+    png:{ name:"파푸아뉴기니", iso:"PNG", center:[-6.3,144.5], zoom:6, regions:[
+      { id:"wahgi", region:"서부 고원 · Wahgi Valley", title:"와기밸리", coord:[-5.85,144.25],
+        coordFlag:"와기밸리·마운트하겐 근사 중심점", tags:["basic","flavor"], swatch:"#5c4a2e", emoji:"⛰️",
+        beanDesc:"고지대 워시드 생두. 티피카·부르봉 계열로 인도네시아보다 밝은 편.",
+        facts:{"가공":"주로 워시드","고도":"1,400~1,900m","품종":"티피카·부르봉","성격":"과일·와이니"},
+        flavor:"열대과일·초콜릿, 와인 같은 복합미, 묵직한 바디. 수마트라와 결이 비슷하나 산미가 조금 더 밝다.",
+        about:"파푸아뉴기니 서부 고원 마운트하겐 일대의 대표 산지. 20세기 자메이카 블루마운틴 종자가 도입돼 워시드 아라비카가 자리 잡았다." },
+      { id:"easternhighlands", region:"동부 고원 · Eastern Highlands", title:"이스턴하이랜즈", coord:[-6.3,145.4],
+        coordFlag:"동부 고원 지역 근사 중심점", tags:["basic","flavor"], swatch:"#6b5b32", emoji:"🌿",
+        beanDesc:"소농 '가든 커피' 중심 산지. 로트 편차가 있는 편.",
+        facts:{"가공":"주로 워시드","고도":"1,300~1,800m","품종":"티피카·아루샤","성격":"과일·균형"},
+        flavor:"잘 익은 과일과 초콜릿, 균형 잡힌 산미와 바디. 소농 로트라 개성 편차가 있다.",
+        about:"수많은 소농이 텃밭 규모로 재배하는 '가든 커피' 지역. 고롱카 일대가 중심이며 균형 잡힌 컵으로 알려져 있다." }
     ]}
   }}
 };
@@ -544,12 +592,13 @@ function paintSheet(){
   sheetScroll.scrollTop=0;
   highlight(r.id);
   document.querySelectorAll('.city').forEach(el=>el.classList.toggle('active',el.dataset.r===r.id));
-  // 나라 기본 줌을 유지한 채, 마커를 시트 위 영역에 오도록 화면 아래쪽에 배치
+  // 마커가 시트(42dvh)에 안 가리도록, 마커를 화면 위쪽 1/4 지점에 배치
   const cc=DATA[currentCont].countries[currentCountry];
   const z=cc?cc.zoom:map.getZoom();
-  map.setView(r.coord, z, {animate:true});
-  // 시트(42dvh)에 가리지 않게 위로 밀어 올림
-  setTimeout(()=>{ map.panBy([0, -window.innerHeight*0.18], {animate:true}); }, 260);
+  // 줌 레벨에서 화면 세로 25%에 해당하는 위도 오프셋 계산
+  const latSpanFull=180/Math.pow(2,z);           // 타일 한 화면(대략) 위도 폭
+  const offset=latSpanFull*0.28;                  // 위로 밀 양
+  map.setView([r.coord[0]-offset, r.coord[1]], z, {animate:true});
 }
 
 function goRegion(dir){
