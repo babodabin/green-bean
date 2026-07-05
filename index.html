@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="생두지도">
+<meta name="theme-color" content="#3d2b1f">
+<title>생두지도 Bean Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root{
+    --bg:#f6efe6; --panel:#fbf6ee; --ink:#3d2b1f; --sub:#8a7a68;
+    --line:#e6d9c8; --accent:#6f4e37; --accent2:#a9744f; --pin:#7a4a2b;
+    --green:#5b6b3a; --gold:#b8863b;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI",sans-serif;
+    background:var(--bg); color:var(--ink); overflow:hidden;
+  }
+  #app{display:flex; flex-direction:column; height:100dvh;}
+
+  header{padding:env(safe-area-inset-top) 16px 0; background:var(--bg);}
+  .brand{display:flex; align-items:baseline; gap:10px; padding:14px 2px 10px;}
+  .brand h1{font-size:26px; margin:0; letter-spacing:-.5px;}
+  .brand span{font-size:14px; color:var(--sub); font-weight:500;}
+
+  .tabs{display:flex; gap:8px; padding:0 0 10px;}
+  .tab{
+    flex:1; padding:12px 0; text-align:center; border:1px solid var(--line);
+    border-radius:14px; background:var(--panel); color:var(--sub);
+    font-size:15px; font-weight:600; cursor:pointer; transition:.15s;
+  }
+  .tab.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+
+  .controls{padding:0 16px 10px; background:var(--bg);}
+  .search{
+    width:100%; padding:13px 16px; border:1px solid var(--line);
+    border-radius:14px; background:var(--panel); font-size:15px; color:var(--ink);
+    margin-bottom:8px; outline:none;
+  }
+  .search::placeholder{color:#b9ab99;}
+
+  .chips{display:flex; gap:7px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:0 0 auto; padding:8px 14px; border:1px solid var(--line);
+    border-radius:20px; background:var(--panel); color:var(--sub);
+    font-size:13px; font-weight:600; cursor:pointer; transition:.15s; white-space:nowrap;
+  }
+  .chip.active{background:var(--accent2); color:#fff; border-color:var(--accent2);}
+
+  #map{flex:1; width:100%; background:#dfe6e2;}
+
+  /* 하단 시트 */
+  .sheet{
+    position:fixed; left:0; right:0; bottom:0; z-index:1000;
+    background:var(--panel); border-radius:20px 20px 0 0;
+    box-shadow:0 -8px 30px rgba(0,0,0,.18);
+    transform:translateY(100%); transition:transform .28s cubic-bezier(.2,.8,.2,1);
+    max-height:74dvh; overflow-y:auto; padding-bottom:env(safe-area-inset-bottom);
+  }
+  .sheet.open{transform:translateY(0);}
+  .sheet-grip{width:40px; height:4px; background:var(--line); border-radius:3px; margin:10px auto 4px;}
+  .sheet-in{padding:6px 20px 26px;}
+  .sheet-region{font-size:13px; color:var(--accent2); font-weight:700; letter-spacing:.3px;}
+  .sheet-title{font-size:24px; margin:2px 0 4px; letter-spacing:-.5px;}
+  .sheet-badges{display:flex; gap:6px; flex-wrap:wrap; margin:8px 0 14px;}
+  .badge{font-size:12px; font-weight:700; padding:5px 10px; border-radius:8px;}
+  .badge.coe{background:#f5ecdb; color:var(--gold);}
+  .badge.basic{background:#efe7db; color:var(--accent);}
+  .badge.fr{background:#e7ede1; color:var(--green);}
+
+  .facts{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;}
+  .fact{background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:10px 12px;}
+  .fact .k{font-size:11px; color:var(--sub); font-weight:600; margin-bottom:3px;}
+  .fact .v{font-size:15px; font-weight:700;}
+
+  .bean{display:flex; align-items:center; gap:14px; background:var(--bg);
+    border:1px solid var(--line); border-radius:14px; padding:12px; margin-bottom:14px;}
+  .bean-swatch{width:56px; height:56px; border-radius:12px; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center; font-size:26px;}
+  .bean-desc{font-size:13px; color:var(--sub); line-height:1.5;}
+
+  .section-h{font-size:13px; font-weight:700; color:var(--accent); margin:0 0 6px;}
+  .body-t{font-size:14px; line-height:1.65; color:#5c4b3a; margin:0 0 16px;}
+
+  .note{font-size:12px; color:var(--sub); background:#f5ecdb; border-radius:10px;
+    padding:10px 12px; line-height:1.5;}
+
+  /* Leaflet 마커 라벨 (성경지도 스타일) */
+  .pin-label{
+    background:var(--panel); border:1px solid var(--line); color:var(--ink);
+    font-size:12px; font-weight:700; padding:3px 8px; border-radius:8px;
+    box-shadow:0 2px 6px rgba(0,0,0,.12); white-space:nowrap;
+  }
+  .pin-dot{
+    width:16px; height:16px; border-radius:50% 50% 50% 0; background:var(--pin);
+    transform:rotate(-45deg); border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,.3);
+  }
+  .pin-dot.coe{background:var(--gold);}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand"><h1>생두지도</h1><span>Bean Map</span></div>
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-cont="africa">아프리카</div>
+      <div class="tab" data-cont="asia">아시아</div>
+    </div>
+  </header>
+  <div class="controls">
+    <input class="search" id="search" placeholder="지역 검색 (예: 예가체프, 시다모)">
+    <div class="chips" id="chips">
+      <div class="chip active" data-f="all">전체</div>
+      <div class="chip" data-f="basic">기본</div>
+      <div class="chip" data-f="coe">COE</div>
+      <div class="chip" data-f="flavor">맛·향</div>
+      <div class="chip" data-f="franchise">프랜차이즈</div>
+    </div>
+  </div>
+  <div id="map"></div>
+</div>
+
+<div class="sheet" id="sheet">
+  <div class="sheet-grip"></div>
+  <div class="sheet-in" id="sheetIn"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ---------- 데이터 ----------
+// 확인된 사실만 입력. 미확정 좌표/매칭은 flag로 표기.
+const DATA = {
+  africa: {
+    center:[8.5,38.7], zoom:6,
+    countries:{
+      ethiopia:{
+        name:"에티오피아", center:[8.0,38.4], zoom:6,
+        regions:[
+          {
+            id:"yirgacheffe",
+            region:"게데오존 · Gedeo Zone",
+            title:"예가체프 Yirgacheffe",
+            coord:[6.162,38.205],
+            tags:["basic","flavor"],
+            swatch:"#8fae5d", emoji:"🫘",
+            beanDesc:"작고 균일한 청록빛 생두. 워시드 가공이 많아 결점두가 적고 표면이 깨끗함.",
+            facts:{"가공":"주로 워시드","고도":"1,750~2,200m","품종":"에티오피아 재래종(Heirloom)","대표 맛":"자스민·레몬·홍차"},
+            flavor:"밝은 산미와 꽃향이 핵심. 자스민·베르가못 같은 플로럴, 레몬·라임 감귤류, 홍차의 은은한 탄닌. 바디는 가볍고 깔끔한 편.",
+            about:"예가체프는 단일 농장이 아니라 게데오존 전역을 아우르는 산지 명칭이다. 이 안에 코체레·게데브 등 세부 구역과 수백 개 워싱스테이션이 있어, 지도상의 이 지점은 지역 대표점이다.",
+            franchise:null
+          },
+          {
+            id:"sidama",
+            region:"시다모존 · Sidama Zone",
+            title:"Basha Bekele",
+            coord:[6.70,38.42],
+            coordFlag:"정확 좌표 미확정 · 시다모 지역 근사값",
+            tags:["basic","coe","flavor"],
+            swatch:"#c25b4a", emoji:"🍓",
+            beanDesc:"내추럴 가공 생두. 과육을 붙인 채 건조해 표면이 짙고 과일향 전구체가 풍부함.",
+            facts:{"수상":"COE 2025 1위","점수":"90.5","가공":"내추럴","품종":"74158 / 고도 2,360m"},
+            flavor:"딸기·라즈베리 같은 붉은 베리, 자스민 플로럴, 꿀 단맛, 복숭아·감귤의 화사함. 아주 깨끗하고 주시한 컵.",
+            about:"에티오피아 COE 2025 1위 커피. 시다모존 소속으로 예가체프(게데오존)와는 다른 행정구역이다. 개별 농장의 정밀 좌표는 공개 자료로 확정되지 않아 지역 중심 근사값에 표시했다.",
+            franchise:null,
+            coe:true
+          }
+        ]
+      }
+    }
+  },
+  asia:{
+    center:[15,100], zoom:4,
+    countries:{} // 추후 확장
+  }
+};
+
+// ---------- 지도 ----------
+const map = L.map('map',{zoomControl:true, attributionControl:true})
+  .setView(DATA.africa.center, DATA.africa.zoom);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+  maxZoom:18, attribution:'&copy; OpenStreetMap &copy; CARTO'
+}).addTo(map);
+
+let markers=[];
+let currentCont='africa';
+let currentFilter='all';
+
+function clearMarkers(){ markers.forEach(m=>map.removeLayer(m)); markers=[]; }
+
+function pinIcon(isCoe){
+  return L.divIcon({
+    className:'', iconSize:[16,16], iconAnchor:[8,16],
+    html:`<div class="pin-dot ${isCoe?'coe':''}"></div>`
+  });
+}
+function labelIcon(text){
+  return L.divIcon({className:'', iconSize:[0,0], iconAnchor:[-12,8],
+    html:`<div class="pin-label">${text}</div>`});
+}
+
+function render(){
+  clearMarkers();
+  const cont = DATA[currentCont];
+  if(!cont) return;
+  Object.values(cont.countries).forEach(country=>{
+    country.regions.forEach(r=>{
+      const show = currentFilter==='all' || r.tags.includes(currentFilter);
+      if(!show) return;
+      const m = L.marker(r.coord,{icon:pinIcon(r.coe)}).addTo(map);
+      const lbl = L.marker(r.coord,{icon:labelIcon(r.title.split(' ')[0]), interactive:false}).addTo(map);
+      m.on('click',()=>openSheet(r));
+      markers.push(m); markers.push(lbl);
+    });
+  });
+}
+
+// ---------- 하단 시트 ----------
+const sheet=document.getElementById('sheet');
+const sheetIn=document.getElementById('sheetIn');
+
+function openSheet(r){
+  const badges=[];
+  if(r.tags.includes('coe')) badges.push('<span class="badge coe">COE 2025 1위</span>');
+  if(r.tags.includes('basic')) badges.push('<span class="badge basic">기본</span>');
+  if(r.franchise) badges.push('<span class="badge fr">프랜차이즈</span>');
+
+  const facts=Object.entries(r.facts).map(([k,v])=>
+    `<div class="fact"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+
+  const coordNote = r.coordFlag
+    ? `<div class="note">📍 ${r.coordFlag}</div>` : '';
+
+  sheetIn.innerHTML=`
+    <div class="sheet-region">${r.region}</div>
+    <div class="sheet-title">${r.title}</div>
+    <div class="sheet-badges">${badges.join('')}</div>
+    <div class="bean">
+      <div class="bean-swatch" style="background:${r.swatch}22;border:1px solid ${r.swatch}55">${r.emoji}</div>
+      <div class="bean-desc">${r.beanDesc}</div>
+    </div>
+    <div class="facts">${facts}</div>
+    <p class="section-h">맛 · 향</p>
+    <p class="body-t">${r.flavor}</p>
+    <p class="section-h">지역 설명</p>
+    <p class="body-t">${r.about}</p>
+    ${coordNote}
+  `;
+  sheet.classList.add('open');
+  map.setView(r.coord, 9, {animate:true});
+}
+sheet.addEventListener('click',e=>{ if(e.target===sheet) sheet.classList.remove('open'); });
+document.querySelector('.sheet-grip').addEventListener('click',()=>sheet.classList.remove('open'));
+
+// ---------- 탭 / 필터 ----------
+document.getElementById('tabs').addEventListener('click',e=>{
+  const t=e.target.closest('.tab'); if(!t) return;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  currentCont=t.dataset.cont;
+  sheet.classList.remove('open');
+  const c=DATA[currentCont]; map.setView(c.center,c.zoom,{animate:true});
+  render();
+});
+document.getElementById('chips').addEventListener('click',e=>{
+  const c=e.target.closest('.chip'); if(!c) return;
+  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+  c.classList.add('active');
+  currentFilter=c.dataset.f;
+  render();
+});
+document.getElementById('search').addEventListener('input',e=>{
+  const q=e.target.value.trim().toLowerCase(); if(!q) return;
+  const cont=DATA[currentCont];
+  for(const country of Object.values(cont.countries)){
+    for(const r of country.regions){
+      if(r.title.toLowerCase().includes(q)||r.region.toLowerCase().includes(q)){
+        map.setView(r.coord,9,{animate:true}); openSheet(r); return;
+      }
+    }
+  }
+});
+
+render();
+</script>
+</body>
+</html>
