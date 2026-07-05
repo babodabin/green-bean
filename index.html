@@ -38,16 +38,12 @@
   .row::-webkit-scrollbar{display:none;}
   .row:empty{display:none;}
   .countries{padding:0 0 10px;}
-  .chips{padding:0 0 12px;}
 
   .country{flex:0 0 auto; padding:9px 16px; border:1px solid var(--line); border-radius:20px;
     background:var(--panel); color:var(--sub); font-size:14px; font-weight:700; cursor:pointer; transition:.15s;}
   .country.active{background:var(--accent2); color:#fff; border-color:var(--accent2);}
   .country.empty{opacity:.45;}
 
-  .chip{flex:0 0 auto; padding:8px 14px; border:1px solid var(--line); border-radius:20px;
-    background:var(--panel); color:var(--sub); font-size:13px; font-weight:600; cursor:pointer; transition:.15s; white-space:nowrap;}
-  .chip.active{background:var(--accent2); color:#fff; border-color:var(--accent2);}
   .cities{padding:0 0 10px;}
   .city{flex:0 0 auto; padding:8px 14px; border:1px solid var(--line); border-radius:20px;
     background:var(--panel); color:var(--accent); font-size:13px; font-weight:700; cursor:pointer; transition:.15s; white-space:nowrap;}
@@ -127,12 +123,6 @@
     </div>
     <div class="row countries hidden" id="countries"></div>
     <div class="row cities hidden" id="cities"></div>
-    <div class="row chips hidden" id="chips">
-      <div class="chip" data-f="basic">기본</div>
-      <div class="chip" data-f="coe">COE</div>
-      <div class="chip" data-f="flavor">맛·향</div>
-      <div class="chip" data-f="franchise">프랜차이즈</div>
-    </div>
   </header>
 
   <div id="map"></div>
@@ -426,7 +416,6 @@ let borderLayers=[];  // 대륙 전체 국경들
 let countryLabels=[]; // 대륙 뷰의 국가 이름 라벨
 let currentCont=null;
 let currentCountry=null;
-let currentFilter=null;
 let currentRegions=[];
 let currentIndex=0;
 
@@ -449,17 +438,14 @@ function loadBorder(iso, styleColor, weight){
   }).catch(()=>null);
 }
 
-// 대륙 선택: 나라 칩만 노출 (도시/필터 숨김)
+// 대륙 선택: 나라 칩만 노출
 function selectContinent(cont){
   currentCont=cont;
   currentCountry=null;
-  currentFilter=null;
   currentRegions=[];
-  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
   document.getElementById('countries').classList.remove('hidden');
   document.getElementById('cities').classList.add('hidden');
   document.getElementById('cities').innerHTML='';
-  document.getElementById('chips').classList.add('hidden');
   clearMarkers(); clearBorders(); clearCountryLabels(); closeSheet();
   renderCountries();
 
@@ -489,16 +475,13 @@ function renderCountries(){
   }).join('');
 }
 
-// 나라 선택: 국경 + 산지 마커 + 도시칩 + 필터 노출
+// 나라 선택: 국경 + 산지 마커 + 도시칩
 function selectCountry(k){
   currentCountry=k;
   const c=DATA[currentCont].countries[k];
   currentRegions=c.regions;
-  currentFilter=null;
-  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
   document.getElementById('countries').classList.remove('hidden');
   document.getElementById('cities').classList.remove('hidden');
-  document.getElementById('chips').classList.remove('hidden');
   clearMarkers(); clearBorders(); clearCountryLabels(); closeSheet();
   renderCountries();
   renderCities();
@@ -537,19 +520,6 @@ function clearHighlight(){
     const lblEl=o.label.getElement()?.querySelector('.pin-label');
     if(pinEl){ pinEl.classList.remove('faded','active'); }
     if(lblEl){ lblEl.classList.remove('faded'); }
-  });
-}
-
-function applyFilter(){
-  Object.entries(markers).forEach(([mid,o])=>{
-    const r=currentRegions.find(x=>x.id===mid);
-    const match=!currentFilter||r.tags.includes(currentFilter);
-    const pinEl=o.pin.getElement()?.querySelector('.pin-dot');
-    const lblEl=o.label.getElement()?.querySelector('.pin-label');
-    if(pinEl) pinEl.classList.toggle('faded',!match);
-    if(lblEl) lblEl.classList.toggle('faded',!match);
-    o.pin.off('click');
-    if(match) o.pin.on('click',()=>openSheetByRegion(r));
   });
 }
 
@@ -592,13 +562,16 @@ function paintSheet(){
   sheetScroll.scrollTop=0;
   highlight(r.id);
   document.querySelectorAll('.city').forEach(el=>el.classList.toggle('active',el.dataset.r===r.id));
-  // 마커를 정확한 좌표에 두고, 시트(42dvh)에 안 가리도록 지도 컨테이너 기준 픽셀만큼만 위로 이동
+  // 마커를 정확한 좌표에 두되, 시트에 안 가리도록 지도 가시영역 상단 30% 지점에 배치
   const cc=DATA[currentCont].countries[currentCountry];
   const z=cc?cc.zoom:map.getZoom();
-  map.setView(r.coord, z, {animate:false});
   const mapH=document.getElementById('map').clientHeight;
-  // 마커가 지도 영역 상단 약 32% 지점에 오도록: 지도 중앙(50%)에서 위로 18%p 이동
-  map.panBy([0, -mapH*0.18], {animate:true});
+  // 목표: 마커가 지도 세로 30% 위치에 오게 → 지도 중심을 마커보다 (20% 높이)만큼 아래로
+  const targetPx=map.project(r.coord, z);            // 마커의 픽셀 좌표
+  const shiftPx=mapH*0.20;                            // 중심을 아래로 내릴 픽셀량
+  const centerPx=targetPx.add([0, shiftPx]);         // 새 지도 중심(픽셀)
+  const newCenter=map.unproject(centerPx, z);        // 다시 위경도로
+  map.setView(newCenter, z, {animate:true});
 }
 
 function goRegion(dir){
@@ -633,15 +606,6 @@ document.getElementById('cities').addEventListener('click',function(e){
   const c=e.target.closest('.city'); if(!c) return;
   const r=currentRegions.find(x=>x.id===c.dataset.r); if(!r) return;
   openSheetByRegion(r);
-});
-document.getElementById('chips').addEventListener('click',function(e){
-  const c=e.target.closest('.chip'); if(!c) return;
-  const f=c.dataset.f;
-  if(currentFilter===f){ currentFilter=null; c.classList.remove('active'); }
-  else{ currentFilter=f;
-    document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
-    c.classList.add('active'); }
-  applyFilter();
 });
 document.getElementById('search').addEventListener('input',function(e){
   const q=e.target.value.trim().toLowerCase(); if(!q) return;
