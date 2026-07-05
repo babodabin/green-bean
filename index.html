@@ -34,19 +34,21 @@
     font-size:14px; font-weight:600; cursor:pointer; transition:.15s;}
   .tab.active{background:var(--accent); color:#fff; border-color:var(--accent);}
 
-  .countries{display:flex; gap:8px; overflow-x:auto; padding:0 0 12px; scrollbar-width:none;}
-  .countries::-webkit-scrollbar{display:none;}
-  .countries:empty{display:none;}
+  .row{display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; transition:.2s;}
+  .row::-webkit-scrollbar{display:none;}
+  .row:empty{display:none;}
+  .countries{padding:0 0 10px;}
+  .chips{padding:0 0 12px;}
+
   .country{flex:0 0 auto; padding:9px 16px; border:1px solid var(--line); border-radius:20px;
     background:var(--panel); color:var(--sub); font-size:14px; font-weight:700; cursor:pointer; transition:.15s;}
   .country.active{background:var(--accent2); color:#fff; border-color:var(--accent2);}
   .country.empty{opacity:.45;}
 
-  .chips{display:flex; gap:7px; overflow-x:auto; padding:0 0 12px; scrollbar-width:none;}
-  .chips::-webkit-scrollbar{display:none;}
   .chip{flex:0 0 auto; padding:8px 14px; border:1px solid var(--line); border-radius:20px;
     background:var(--panel); color:var(--sub); font-size:13px; font-weight:600; cursor:pointer; transition:.15s; white-space:nowrap;}
   .chip.active{background:var(--accent2); color:#fff; border-color:var(--accent2);}
+  .chips.hidden{display:none;}
 
   #map{flex:1; width:100%; background:#dfe6e2; position:relative;}
 
@@ -55,15 +57,12 @@
     background:var(--panel); font-size:15px; color:var(--ink); outline:none;}
   .search::placeholder{color:#b9ab99;}
 
-  /* 시트: 낮게(42%), 내부 세로 스크롤 + 좌우 스와이프 */
-  .sheet{
-    position:fixed; left:0; right:0; bottom:0; z-index:1000;
+  .sheet{position:fixed; left:0; right:0; bottom:0; z-index:1000;
     background:var(--panel); border-radius:20px 20px 0 0;
     box-shadow:0 -8px 30px rgba(0,0,0,.18);
     transform:translateY(110%); transition:transform .3s cubic-bezier(.2,.8,.2,1);
     height:42dvh; display:flex; flex-direction:column;
-    padding-bottom:env(safe-area-inset-bottom);
-  }
+    padding-bottom:env(safe-area-inset-bottom);}
   .sheet.open{transform:translateY(0);}
   .sheet-top{position:relative; padding:0 0 2px;}
   .sheet-grip{width:44px; height:5px; background:var(--line); border-radius:3px; margin:10px auto 4px;}
@@ -102,11 +101,14 @@
 
   .pin-label{background:var(--panel); border:1px solid var(--line); color:var(--ink);
     font-size:12px; font-weight:700; padding:3px 8px; border-radius:8px;
-    box-shadow:0 2px 6px rgba(0,0,0,.12); white-space:nowrap;}
+    box-shadow:0 2px 6px rgba(0,0,0,.12); white-space:nowrap; transition:opacity .2s;}
   .pin-dot{width:16px; height:16px; border-radius:50% 50% 50% 0; background:var(--pin);
-    transform:rotate(-45deg); border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,.3);}
+    transform:rotate(-45deg); border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,.3); transition:opacity .2s;}
   .pin-dot.coe{background:var(--gold);}
-  .pin-dim{opacity:.28;}
+  .pin-dot.active{width:20px; height:20px; box-shadow:0 3px 9px rgba(0,0,0,.45); z-index:600;}
+  .faded{opacity:.25 !important;}
+  .clabel{background:transparent; color:var(--sub); font-size:12px; font-weight:800;
+    text-shadow:0 0 3px #f6efe6,0 0 3px #f6efe6,0 0 3px #f6efe6; white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -119,8 +121,8 @@
       <div class="tab" data-cont="america">아메리카</div>
       <div class="tab" data-cont="etc">기타</div>
     </div>
-    <div class="countries" id="countries"></div>
-    <div class="chips" id="chips">
+    <div class="row countries" id="countries"></div>
+    <div class="row chips hidden" id="chips">
       <div class="chip" data-f="basic">기본</div>
       <div class="chip" data-f="coe">COE</div>
       <div class="chip" data-f="flavor">맛·향</div>
@@ -131,7 +133,7 @@
   <div id="map"></div>
 
   <div class="searchbar">
-    <input class="search" id="search" placeholder="지역 검색 (예: 예가체프, 우일라, 코나)">
+    <input class="search" id="search" placeholder="지역 검색 (예: 예가체프, 코나, 블루마운틴)">
   </div>
 </div>
 
@@ -150,7 +152,7 @@
 <script>
 const DATA = {
   africa:{ label:"아프리카", center:[6,34], zoom:4, countries:{
-    ethiopia:{ name:"에티오피아", iso:"ETH", center:[7.6,38.6], zoom:6.2, regions:[
+    ethiopia:{ name:"에티오피아", iso:"ETH", center:[8.6,40.0], zoom:5.4, regions:[
       { id:"yirgacheffe", region:"게데오존 · Gedeo", title:"예가체프", coord:[6.162,38.205],
         tags:["basic","flavor"], swatch:"#8fae5d", emoji:"🌸",
         beanDesc:"작고 균일한 청록빛 생두. 워시드가 많아 결점두 적고 표면이 깨끗함.",
@@ -182,7 +184,7 @@ const DATA = {
         flavor:"블루베리·와인 같은 발효 과일향, 다크초콜릿, 묵직한 바디. 남부 워시드와 정반대 성격.",
         about:"에티오피아 동부의 전통 건식 가공 산지. 물이 부족해 예로부터 내추럴이 발달했고, 강렬한 와이니 캐릭터로 알려져 있다." }
     ]},
-    kenya:{ name:"케냐", iso:"KEN", center:[-0.4,37.3], zoom:7, regions:[
+    kenya:{ name:"케냐", iso:"KEN", center:[0.2,37.9], zoom:6, regions:[
       { id:"nyeri", region:"중부 고원 · Nyeri", title:"니에리", coord:[-0.42,36.95],
         coordFlag:"니에리 카운티 근사 중심점", tags:["basic","flavor"], swatch:"#a8324a", emoji:"🍇",
         beanDesc:"회록빛 큰 생두. SL28·SL34 품종이 많고 밀도가 높음.",
@@ -204,11 +206,11 @@ const DATA = {
     ]}
   }},
   asia:{ label:"아시아", center:[2,115], zoom:4, countries:{
-    indonesia:{ name:"인도네시아", iso:"IDN", center:[-2,118], zoom:5, regions:[
-      { id:"gayo", region:"수마트라 · Gayo", title:"수마트라 만델링(가요)", coord:[4.6,96.85],
+    indonesia:{ name:"인도네시아", iso:"IDN", center:[-2,118], zoom:4.5, regions:[
+      { id:"gayo", region:"수마트라 · Gayo", title:"수마트라(가요)", coord:[4.6,96.85],
         coordFlag:"가요 고원 근사 중심점", tags:["basic","flavor"], swatch:"#4e5b3a", emoji:"🌿",
         beanDesc:"불규칙한 짙은 청록빛 생두. 길링 바사(습식 탈각) 특유의 거친 외형.",
-        facts:{"가공":"길링 바사(반수세식)","고도":"1,100~1,600m","품종":"티피카·아텡·가요","성격":"흙내·묵직"},
+        facts:{"가공":"길링 바사","고도":"1,100~1,600m","품종":"티피카·아텡·가요","성격":"흙내·묵직"},
         flavor:"허브·시더·흙(어씨) 향, 다크초콜릿, 낮은 산미와 아주 묵직한 바디. 개성 강한 인도네시아 프로파일.",
         about:"수마트라 북부 아체의 가요 고원 산지. 습한 기후 탓에 길링 바사 가공이 발달해 특유의 흙내와 무거운 바디가 난다." },
       { id:"java", region:"자바 · Java", title:"자바", coord:[-7.6,111.2],
@@ -217,7 +219,7 @@ const DATA = {
         facts:{"가공":"주로 워시드","고도":"1,300~1,700m","품종":"티피카 계열","성격":"균형·스파이시"},
         flavor:"스파이스·삼나무, 은은한 단맛, 수마트라보다 깔끔하고 균형적인 바디.",
         about:"자바섬 동부 이젠 고원의 오래된 산지. 네덜란드 식민기 대농장에서 출발해 워시드 가공이 자리 잡았다." },
-      { id:"toraja", region:"술라웨시 · Toraja", title:"술라웨시 토라자", coord:[-3.0,119.8],
+      { id:"toraja", region:"술라웨시 · Toraja", title:"토라자", coord:[-3.0,119.8],
         coordFlag:"토라자 지역 근사 중심점", tags:["basic","flavor"], swatch:"#5c4a2e", emoji:"🍂",
         beanDesc:"짙고 무거운 생두. 수마트라와 유사하나 더 깨끗한 편.",
         facts:{"가공":"길링 바사·워시드","고도":"1,400~1,900m","품종":"티피카 계열","성격":"묵직·다크"},
@@ -225,8 +227,8 @@ const DATA = {
         about:"술라웨시 중부 고지대 산지. 수마트라만큼 묵직하지만 좀 더 정제된 클린컵으로 평가된다." }
     ]}
   }},
-  america:{ label:"아메리카", center:[4,-70], zoom:3, countries:{
-    colombia:{ name:"콜롬비아", iso:"COL", center:[3.5,-74], zoom:6, regions:[
+  america:{ label:"아메리카", center:[6,-72], zoom:3, countries:{
+    colombia:{ name:"콜롬비아", iso:"COL", center:[4.2,-73.5], zoom:5, regions:[
       { id:"huila", region:"우일라 · Huila", title:"우일라", coord:[2.3,-75.8],
         coordFlag:"우일라주 근사 중심점", tags:["basic","flavor"], swatch:"#b5643c", emoji:"🍯",
         beanDesc:"균일하고 통통한 생두. 소규모 농장 워시드가 대부분.",
@@ -246,7 +248,7 @@ const DATA = {
         flavor:"초콜릿·캐러멜, 붉은 과일, 둥근 바디. 우일라보다 조금 더 묵직한 단맛.",
         about:"콜롬비아 중서부 산지로, 과거 접근이 어려웠으나 최근 스페셜티 생산지로 빠르게 성장했다." }
     ]},
-    brazil:{ name:"브라질", iso:"BRA", center:[-19,-46], zoom:6, regions:[
+    brazil:{ name:"브라질", iso:"BRA", center:[-19,-46], zoom:5, regions:[
       { id:"cerrado", region:"미나스 · Cerrado", title:"세하도", coord:[-18.9,-47.5],
         coordFlag:"세하도 미네이루 근사 중심점", tags:["basic","flavor"], swatch:"#7a5230", emoji:"🍫",
         beanDesc:"크고 균일한 생두. 평지 대농장 기계 수확이 많아 상태가 고름.",
@@ -264,9 +266,9 @@ const DATA = {
         beanDesc:"붉은 토양의 전통 산지. 오래된 커피 재배 역사.",
         facts:{"가공":"내추럴·펄프드","고도":"900~1,200m","품종":"문도노보·카투아이","성격":"단맛·바디"},
         flavor:"캐러멜·꿀의 진한 단맛, 초콜릿, 부드러운 산미. 세하도보다 단맛이 조금 더 도드라지는 편.",
-        about:"상파울루와 미나스제라이스 경계의 붉은 토양 지대. 브라질에서 손꼽히는 오래된 커피 산지 중 하나다." }
+        about:"상파울루와 미나스제라이스 경계의 붉은 토양 지대." }
     ]},
-    guatemala:{ name:"과테말라", iso:"GTM", center:[15.3,-90.6], zoom:7, regions:[
+    guatemala:{ name:"과테말라", iso:"GTM", center:[15.5,-90.3], zoom:6, regions:[
       { id:"antigua", region:"안티구아 · Antigua", title:"안티구아", coord:[14.56,-90.73],
         coordFlag:"안티구아 밸리 근사 중심점", tags:["basic","flavor"], swatch:"#6b4a2e", emoji:"🌋",
         beanDesc:"화산토 재배 생두. 균일하고 밀도가 높은 편.",
@@ -286,7 +288,7 @@ const DATA = {
         flavor:"초콜릿·견과, 감귤 산미, 균형 잡힌 바디. 안정적이고 부드러운 단맛.",
         about:"아티틀란 호수를 둘러싼 화산 사면 산지. 호수가 만드는 미세기후와 화산토가 균형 잡힌 커피를 만든다." }
     ]},
-    costarica:{ name:"코스타리카", iso:"CRI", center:[9.8,-84], zoom:8, regions:[
+    costarica:{ name:"코스타리카", iso:"CRI", center:[9.9,-84], zoom:7, regions:[
       { id:"tarrazu", region:"타라수 · Tarrazú", title:"타라수", coord:[9.66,-84.02],
         coordFlag:"타라수 지역 근사 중심점", tags:["basic","flavor"], swatch:"#a0622f", emoji:"🍯",
         beanDesc:"고지대 재배로 밀도 높고 균일한 생두. 허니 프로세스로 유명.",
@@ -305,22 +307,58 @@ const DATA = {
         facts:{"가공":"주로 워시드","고도":"1,200~1,650m","품종":"카투라·카투아이","성격":"균형·산미"},
         flavor:"감귤·사과 산미, 초콜릿 단맛, 깔끔하고 균형 잡힌 바디. '코스타리카의 보르도'로 불림.",
         about:"이라수 화산 기슭의 오래된 산지. 도시 확장으로 재배지가 줄었지만 균형 잡힌 클래식 커피로 이름났다." }
+    ]},
+    elsalvador:{ name:"엘살바도르", iso:"SLV", center:[13.8,-88.9], zoom:8, regions:[
+      { id:"apaneca", region:"아파네카-이야마테펙", title:"아파네카", coord:[13.85,-89.79],
+        coordFlag:"아파네카 산맥 근사 중심점", tags:["basic","flavor"], swatch:"#a0622f", emoji:"🍮",
+        beanDesc:"부르봉 계열 중심 생두. 부드럽고 균일한 편.",
+        facts:{"가공":"워시드·허니","고도":"1,200~1,800m","품종":"부르봉·파카마라","성격":"단맛·부드러움"},
+        flavor:"캐러멜·밀크초콜릿, 잘 익은 과일, 부드러운 산미와 시럽 같은 단맛. 파카마라는 화사함이 더해짐.",
+        about:"엘살바도르 서부 화산 산맥의 대표 산지. 부르봉 전통이 강하고, 대형 콩 파카마라 품종의 본고장으로 알려져 있다." },
+      { id:"santaana", region:"산타아나 · Ilamatepec", title:"산타아나", coord:[13.85,-89.63],
+        coordFlag:"산타아나 화산 지역 근사 중심점", tags:["basic","flavor"], swatch:"#8f5a3c", emoji:"🌋",
+        beanDesc:"화산 사면의 부르봉 재배 생두.",
+        facts:{"가공":"워시드·허니","고도":"1,000~1,600m","품종":"부르봉·파카스","성격":"단맛·균형"},
+        flavor:"흑설탕·초콜릿, 오렌지 산미, 둥근 바디. 안정적이고 달콤한 클래식 프로파일.",
+        about:"엘살바도르 최고봉 산타아나(이야마테펙) 화산 사면 산지. 미네랄 풍부한 화산토에서 균형 잡힌 커피가 난다." }
     ]}
   }},
-  etc:{ label:"기타", center:[19.6,-155.5], zoom:6, countries:{
+  etc:{ label:"기타", center:[15,-60], zoom:2.4, countries:{
     hawaii:{ name:"하와이", iso:"HAW", center:[19.6,-155.5], zoom:8, noBorder:true, regions:[
       { id:"kona", region:"빅아일랜드 · Kona", title:"코나", coord:[19.62,-155.93],
         tags:["basic","flavor"], swatch:"#7a5230", emoji:"🌺",
         beanDesc:"통통하고 균일한 생두. 엄격한 등급 관리(Extra Fancy 등)로 외형이 고름.",
         facts:{"가공":"주로 워시드","고도":"250~900m","품종":"티피카(코나 티피카)","성격":"부드러움·단맛"},
         flavor:"부드러운 산미, 꿀·캐러멜 단맛, 견과와 은은한 과일. 자극 없이 매끄럽고 클린한 컵.",
-        about:"후알랄라이·마우나로아 화산 서사면의 좁은 벨트 산지. 오전 햇살·오후 구름의 독특한 기후와 화산토가 부드러운 커피를 만든다. 생산량이 적고 인건비가 높아 고가에 거래된다." },
+        about:"후알랄라이·마우나로아 화산 서사면의 좁은 벨트 산지. 오전 햇살·오후 구름의 독특한 기후와 화산토가 부드러운 커피를 만든다. 생산량이 적고 인건비가 높아 고가에 거래된다. '세계 3대 커피'로 흔히 꼽히는 곳이지만, 이는 공식 등급이 아니라 희소성·역사에 기반한 마케팅 통칭이다." },
       { id:"kau", region:"빅아일랜드 · Ka‘u", title:"카우", coord:[19.2,-155.55],
         coordFlag:"카우 지역 근사 중심점", tags:["basic","flavor"], swatch:"#8a5a34", emoji:"🍮",
         beanDesc:"코나보다 알려지진 않았지만 근래 품질로 주목.",
         facts:{"가공":"워시드·내추럴","고도":"500~900m","품종":"티피카·카투아이","성격":"단맛·과일"},
         flavor:"캐러멜·열대과일, 부드러운 산미, 매끄러운 바디. 코나와 결이 비슷하나 과일감이 조금 더 있음.",
         about:"빅아일랜드 남부 화산 사면 산지. 사탕수수 산업 쇠퇴 후 커피로 전환해 국제 대회 수상으로 이름을 알렸다." }
+    ]},
+    yemen:{ name:"예멘", iso:"YEM", center:[15.5,45.5], zoom:6, regions:[
+      { id:"mokha", region:"홍해 연안 · Mokha", title:"모카", coord:[13.32,43.25],
+        coordFlag:"모카 항 지역 근사 중심점", tags:["basic","flavor"], swatch:"#6b3b2e", emoji:"🍫",
+        beanDesc:"작고 불규칙한 생두. 오래된 재래 품종과 건식 가공으로 외형이 거칠다.",
+        facts:{"가공":"내추럴(건식)","고도":"1,000~2,200m","품종":"예멘 재래종","성격":"와이니·초콜릿"},
+        flavor:"와인·건포도 같은 발효 과일, 다크초콜릿·향신료, 묵직한 바디. 야성적이고 복합적인 컵.",
+        about:"모카 항은 역사적으로 커피가 세계로 나간 관문. '모카'라는 이름의 유래다. 현대 예멘 커피는 여전히 소규모 건식 가공 중심이며 '세계 3대 커피'의 하나로 꼽히지만, 이는 공식 기준이 아닌 역사·희소성에 기반한 통칭이다." },
+      { id:"haraz", region:"서부 산악 · Haraz", title:"하라즈", coord:[15.05,43.7],
+        coordFlag:"하라즈 산악 지역 근사 중심점", tags:["basic","flavor"], swatch:"#7a4a2b", emoji:"⛰️",
+        beanDesc:"고산 계단식 밭에서 재배되는 재래종 생두.",
+        facts:{"가공":"내추럴(건식)","고도":"1,500~2,400m","품종":"예멘 재래종","성격":"복합·스파이시"},
+        flavor:"베리·건과일, 향신료, 진한 단맛과 무거운 바디. 지역마다 편차가 크고 개성이 강하다.",
+        about:"사나 서쪽 하라즈 산악지대. 수백 년 된 계단식 밭에서 전통 방식으로 재배·건조하는 예멘 대표 산지다." }
+    ]},
+    jamaica:{ name:"자메이카", iso:"JAM", center:[18.1,-77.3], zoom:9, regions:[
+      { id:"bluemountain", region:"블루마운틴 · Blue Mountain", title:"블루마운틴", coord:[18.05,-76.65],
+        coordFlag:"블루마운틴 산맥 근사 중심점", tags:["basic","flavor"], swatch:"#3b5b6b", emoji:"🏔️",
+        beanDesc:"크고 균일한 생두. 엄격한 인증·통(barrel) 포장으로 유명.",
+        facts:{"가공":"주로 워시드","고도":"900~1,700m","품종":"블루마운틴 티피카","성격":"부드러움·균형"},
+        flavor:"부드럽고 깔끔한 산미, 견과·초콜릿, 은은한 단맛. 자극이 거의 없는 매끈한 균형이 특징.",
+        about:"자메이카 동부 블루마운틴 산맥의 지정 구역에서만 이 이름을 쓸 수 있다. 서늘한 안개와 느린 성숙이 부드러운 컵을 만든다. '세계 3대 커피'로 꼽히지만 공식 등급이 아니라 희소성·역사에 기반한 통칭이며, 대부분이 일본으로 수출되는 것으로 알려져 있다." }
     ]}
   }}
 };
@@ -330,20 +368,57 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png
   maxZoom:18, attribution:'&copy; OpenStreetMap &copy; CARTO'
 }).addTo(map);
 
-let markers=[];
-let borderLayer=null;
+let markers={};       // id -> {pin, label}
+let borderLayers=[];  // 대륙 전체 국경들
+let countryLabels=[]; // 대륙 뷰의 국가 이름 라벨
 let currentCont=null;
 let currentCountry=null;
 let currentFilter=null;
 let currentRegions=[];
 let currentIndex=0;
 
-function clearMarkers(){ markers.forEach(m=>map.removeLayer(m)); markers=[]; }
-function clearBorder(){ if(borderLayer){ map.removeLayer(borderLayer); borderLayer=null; } }
-function pinIcon(isCoe,dim){ return L.divIcon({className:'', iconSize:[16,16], iconAnchor:[8,16],
-  html:'<div class="pin-dot '+(isCoe?'coe':'')+' '+(dim?'pin-dim':'')+'"></div>'}); }
-function labelIcon(text,dim){ return L.divIcon({className:'', iconSize:[0,0], iconAnchor:[-12,8],
-  html:'<div class="pin-label '+(dim?'pin-dim':'')+'">'+text+'</div>'}); }
+function clearMarkers(){ Object.values(markers).forEach(o=>{map.removeLayer(o.pin); map.removeLayer(o.label);}); markers={}; }
+function clearBorders(){ borderLayers.forEach(l=>map.removeLayer(l)); borderLayers=[]; }
+function clearCountryLabels(){ countryLabels.forEach(l=>map.removeLayer(l)); countryLabels=[]; }
+function pinIcon(isCoe){ return L.divIcon({className:'', iconSize:[16,16], iconAnchor:[8,16],
+  html:'<div class="pin-dot '+(isCoe?'coe':'')+'"></div>'}); }
+function labelIcon(text){ return L.divIcon({className:'', iconSize:[0,0], iconAnchor:[-12,8],
+  html:'<div class="pin-label">'+text+'</div>'}); }
+function countryNameIcon(text){ return L.divIcon({className:'', iconSize:[0,0], iconAnchor:[0,0],
+  html:'<div class="clabel">'+text+'</div>'}); }
+
+function loadBorder(iso, styleColor, weight){
+  const url='https://raw.githubusercontent.com/johan/world.geo.json/master/countries/'+iso+'.geo.json';
+  return fetch(url).then(r=>r.json()).then(gj=>{
+    const layer=L.geoJSON(gj,{style:{color:styleColor,weight:weight,fill:false,dashArray:'1,6'}}).addTo(map);
+    borderLayers.push(layer);
+    return layer;
+  }).catch(()=>null);
+}
+
+// 대륙 선택: 그 대륙의 모든 나라 국경 + 이름 표시 (마커/시트 없음)
+function selectContinent(cont){
+  currentCont=cont;
+  currentCountry=null;
+  currentFilter=null;
+  currentRegions=[];
+  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+  document.getElementById('chips').classList.add('hidden');
+  clearMarkers(); clearBorders(); clearCountryLabels(); closeSheet();
+  renderCountries();
+
+  const c=DATA[cont];
+  const countries=c.countries;
+  Object.values(countries).forEach(country=>{
+    if(country.iso && !country.noBorder){
+      loadBorder(country.iso,'#a9744f',2);
+    }
+    // 나라 이름 라벨(대륙 뷰)
+    const lbl=L.marker(country.center,{icon:countryNameIcon(country.name), interactive:false}).addTo(map);
+    countryLabels.push(lbl);
+  });
+  map.setView(c.center,c.zoom,{animate:true});
+}
 
 function renderCountries(){
   const box=document.getElementById('countries');
@@ -358,63 +433,64 @@ function renderCountries(){
   }).join('');
 }
 
-function renderMarkers(){
-  clearMarkers();
-  if(!currentCont) return;
-  const cont=DATA[currentCont];
-  if(!currentCountry || !cont.countries[currentCountry]) return;
-  const country=cont.countries[currentCountry];
-  country.regions.forEach(r=>{
-    const match = !currentFilter || r.tags.includes(currentFilter);
-    const dim = currentFilter && !match;
-    const m=L.marker(r.coord,{icon:pinIcon(r.tags.includes('coe'),dim), opacity:dim?0.5:1}).addTo(map);
-    const lbl=L.marker(r.coord,{icon:labelIcon(r.title,dim), interactive:false}).addTo(map);
-    if(!dim) m.on('click',()=>openSheetByRegion(r));
-    markers.push(m,lbl);
-  });
-}
-
-function drawBorder(c){
-  clearBorder();
-  if(c.noBorder) return;
-  const url='https://raw.githubusercontent.com/johan/world.geo.json/master/countries/'+c.iso+'.geo.json';
-  fetch(url).then(r=>r.json()).then(gj=>{
-    borderLayer=L.geoJSON(gj,{style:{color:'#a9744f', weight:2.5, fill:false, dashArray:'1,6'}}).addTo(map);
-  }).catch(()=>{});
-}
-
+// 나라 선택: 그 나라만 국경 + 산지 마커 + 필터 노출 + 조금 멀리서
 function selectCountry(k){
   currentCountry=k;
   const c=DATA[currentCont].countries[k];
   currentRegions=c.regions;
+  currentFilter=null;
+  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+  document.getElementById('chips').classList.remove('hidden');
+  clearMarkers(); clearBorders(); clearCountryLabels(); closeSheet();
   renderCountries();
-  renderMarkers();
-  drawBorder(c);
+
+  if(c.iso && !c.noBorder) loadBorder(c.iso,'#a9744f',2.5);
+  c.regions.forEach(r=>{
+    const pin=L.marker(r.coord,{icon:pinIcon(r.tags.includes('coe'))}).addTo(map);
+    const label=L.marker(r.coord,{icon:labelIcon(r.title), interactive:false}).addTo(map);
+    pin.on('click',()=>openSheetByRegion(r));
+    markers[r.id]={pin,label};
+  });
   map.setView(c.center,c.zoom,{animate:true});
-  closeSheet();
 }
 
-function selectContinent(cont){
-  currentCont=cont;
-  currentCountry=null;
-  currentFilter=null;
-  currentRegions=[];
-  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
-  renderCountries();
-  clearMarkers();
-  clearBorder();
-  closeSheet();
-  const c=DATA[cont];
-  map.setView(c.center,c.zoom,{animate:true});
-  const keys=Object.keys(c.countries);
-  if(keys.length===1) selectCountry(keys[0]);
+// 도시(산지) 강조: 선택된 것만 진하게, 나머지 흐리게
+function highlight(id){
+  Object.entries(markers).forEach(([mid,o])=>{
+    const pinEl=o.pin.getElement()?.querySelector('.pin-dot');
+    const lblEl=o.label.getElement()?.querySelector('.pin-label');
+    const on=(mid===id);
+    if(pinEl){ pinEl.classList.toggle('faded',!on); pinEl.classList.toggle('active',on); }
+    if(lblEl){ lblEl.classList.toggle('faded',!on); }
+  });
+}
+function clearHighlight(){
+  Object.values(markers).forEach(o=>{
+    const pinEl=o.pin.getElement()?.querySelector('.pin-dot');
+    const lblEl=o.label.getElement()?.querySelector('.pin-label');
+    if(pinEl){ pinEl.classList.remove('faded','active'); }
+    if(lblEl){ lblEl.classList.remove('faded'); }
+  });
+}
+
+function applyFilter(){
+  Object.entries(markers).forEach(([mid,o])=>{
+    const r=currentRegions.find(x=>x.id===mid);
+    const match=!currentFilter||r.tags.includes(currentFilter);
+    const pinEl=o.pin.getElement()?.querySelector('.pin-dot');
+    const lblEl=o.label.getElement()?.querySelector('.pin-label');
+    if(pinEl) pinEl.classList.toggle('faded',!match);
+    if(lblEl) lblEl.classList.toggle('faded',!match);
+    o.pin.off('click');
+    if(match) o.pin.on('click',()=>openSheetByRegion(r));
+  });
 }
 
 const sheet=document.getElementById('sheet');
 const sheetIn=document.getElementById('sheetIn');
 const sheetScroll=document.getElementById('sheetScroll');
 const sheetNav=document.getElementById('sheetNav');
-function closeSheet(){ sheet.classList.remove('open'); }
+function closeSheet(){ sheet.classList.remove('open'); clearHighlight(); }
 
 function openSheetByRegion(r){
   currentIndex=currentRegions.findIndex(x=>x.id===r.id);
@@ -447,7 +523,8 @@ function paintSheet(){
   sheetNav.innerHTML=currentRegions.map((x,i)=>
     '<span class="dot '+(i===currentIndex?'on':'')+'"></span>').join('');
   sheetScroll.scrollTop=0;
-  map.setView([r.coord[0]-0.15, r.coord[1]], Math.max(map.getZoom(),7), {animate:true});
+  highlight(r.id);
+  map.setView([r.coord[0]-0.12, r.coord[1]], Math.max(map.getZoom(),7), {animate:true});
 }
 
 function goRegion(dir){
@@ -485,7 +562,7 @@ document.getElementById('chips').addEventListener('click',function(e){
   else{ currentFilter=f;
     document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
     c.classList.add('active'); }
-  renderMarkers();
+  applyFilter();
 });
 document.getElementById('search').addEventListener('input',function(e){
   const q=e.target.value.trim().toLowerCase(); if(!q) return;
@@ -497,10 +574,10 @@ document.getElementById('search').addEventListener('input',function(e){
         if(r.title.toLowerCase().includes(q)||r.region.toLowerCase().includes(q)){
           if(currentCont!==contKey){
             document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.cont===contKey));
-            selectContinent(contKey);
+            currentCont=contKey;
           }
-          if(currentCountry!==ck) selectCountry(ck);
-          setTimeout(()=>openSheetByRegion(r),200); return;
+          selectCountry(ck);
+          setTimeout(()=>openSheetByRegion(r),350); return;
         }
       }
     }
@@ -508,9 +585,8 @@ document.getElementById('search').addEventListener('input',function(e){
 });
 map.on('click',function(){ closeSheet(); });
 
-// 초기: 아무 대륙도 선택 안 함(국가 숨김). 아프리카를 기본으로 열어둠.
-document.querySelector('.tab[data-cont="africa"]').classList.add('active');
-selectContinent('africa');
+// 초기: 첫 화면엔 4개 대륙만. 아무 대륙도 선택 안 함(빈 지도).
+map.setView([20,10],2);
 </script>
 </body>
 </html>
