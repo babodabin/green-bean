@@ -29,58 +29,53 @@
   .brand span{font-size:14px; color:var(--sub); font-weight:500;}
 
   .tabs{display:flex; gap:8px; padding:0 0 10px;}
-  .tab{
-    flex:1; padding:12px 0; text-align:center; border:1px solid var(--line);
+  .tab{flex:1; padding:12px 0; text-align:center; border:1px solid var(--line);
     border-radius:14px; background:var(--panel); color:var(--sub);
-    font-size:15px; font-weight:600; cursor:pointer; transition:.15s;
-  }
+    font-size:15px; font-weight:600; cursor:pointer; transition:.15s;}
   .tab.active{background:var(--accent); color:#fff; border-color:var(--accent);}
 
   .countries{display:flex; gap:8px; overflow-x:auto; padding:0 0 12px; scrollbar-width:none;}
   .countries::-webkit-scrollbar{display:none;}
-  .country{
-    flex:0 0 auto; padding:9px 16px; border:1px solid var(--line); border-radius:20px;
-    background:var(--panel); color:var(--sub); font-size:14px; font-weight:700; cursor:pointer; transition:.15s;
-  }
+  .country{flex:0 0 auto; padding:9px 16px; border:1px solid var(--line); border-radius:20px;
+    background:var(--panel); color:var(--sub); font-size:14px; font-weight:700; cursor:pointer; transition:.15s;}
   .country.active{background:var(--accent2); color:#fff; border-color:var(--accent2);}
   .country.empty{opacity:.45;}
 
   .chips{display:flex; gap:7px; overflow-x:auto; padding:0 0 12px; scrollbar-width:none;}
   .chips::-webkit-scrollbar{display:none;}
-  .chip{
-    flex:0 0 auto; padding:8px 14px; border:1px solid var(--line); border-radius:20px;
-    background:var(--panel); color:var(--sub); font-size:13px; font-weight:600; cursor:pointer; transition:.15s; white-space:nowrap;
-  }
+  .chip{flex:0 0 auto; padding:8px 14px; border:1px solid var(--line); border-radius:20px;
+    background:var(--panel); color:var(--sub); font-size:13px; font-weight:600; cursor:pointer; transition:.15s; white-space:nowrap;}
   .chip.active{background:var(--accent2); color:#fff; border-color:var(--accent2);}
 
   #map{flex:1; width:100%; background:#dfe6e2; position:relative;}
 
-  .searchbar{
-    padding:10px 16px calc(10px + env(safe-area-inset-bottom)); background:var(--bg);
-    border-top:1px solid var(--line);
-  }
-  .search{
-    width:100%; padding:14px 16px; border:1px solid var(--line); border-radius:14px;
-    background:var(--panel); font-size:15px; color:var(--ink); outline:none;
-  }
+  .searchbar{padding:10px 16px calc(10px + env(safe-area-inset-bottom)); background:var(--bg); border-top:1px solid var(--line);}
+  .search{width:100%; padding:14px 16px; border:1px solid var(--line); border-radius:14px;
+    background:var(--panel); font-size:15px; color:var(--ink); outline:none;}
   .search::placeholder{color:#b9ab99;}
 
-  /* 하단 시트: 2단계(peek / full) */
+  /* 시트: 고정 크기, 내부 세로 스크롤 + 좌우 스와이프 전환 */
   .sheet{
     position:fixed; left:0; right:0; bottom:0; z-index:1000;
     background:var(--panel); border-radius:20px 20px 0 0;
     box-shadow:0 -8px 30px rgba(0,0,0,.18);
     transform:translateY(110%); transition:transform .3s cubic-bezier(.2,.8,.2,1);
-    height:82dvh; padding-bottom:env(safe-area-inset-bottom);
-    touch-action:none;
+    height:56dvh; display:flex; flex-direction:column;
+    padding-bottom:env(safe-area-inset-bottom);
   }
-  /* peek: 살짝만(위치+요약 보임), full: 거의 다 */
-  .sheet.peek{transform:translateY(calc(82dvh - 240px));}
-  .sheet.full{transform:translateY(6dvh);}
-  .sheet.dragging{transition:none;}
-  .sheet-grip{width:44px; height:5px; background:var(--line); border-radius:3px; margin:10px auto 6px; }
-  .sheet-scroll{height:calc(100% - 24px); overflow-y:auto; -webkit-overflow-scrolling:touch;}
-  .sheet-in{padding:2px 20px 30px;}
+  .sheet.open{transform:translateY(0);}
+  .sheet-top{position:relative; padding:0 0 2px;}
+  .sheet-grip{width:44px; height:5px; background:var(--line); border-radius:3px; margin:10px auto 4px;}
+  .sheet-close{position:absolute; right:16px; top:8px; width:30px; height:30px; border-radius:50%;
+    background:var(--bg); border:1px solid var(--line); color:var(--sub); font-size:16px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;}
+  .sheet-nav{display:flex; align-items:center; justify-content:center; gap:6px; padding:2px 0 4px;}
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--line); transition:.15s;}
+  .dot.on{background:var(--accent2); width:20px; border-radius:4px;}
+
+  .sheet-scroll{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; touch-action:pan-y;}
+  .sheet-in{padding:4px 20px 26px;}
+  .swipe-hint{text-align:center; font-size:11px; color:var(--sub); opacity:.6; margin-bottom:8px;}
   .sheet-region{font-size:13px; color:var(--accent2); font-weight:700; letter-spacing:.3px;}
   .sheet-title{font-size:24px; margin:2px 0 4px; letter-spacing:-.5px;}
   .sheet-badges{display:flex; gap:6px; flex-wrap:wrap; margin:8px 0 14px;}
@@ -100,7 +95,6 @@
     display:flex; align-items:center; justify-content:center; font-size:26px;}
   .bean-desc{font-size:13px; color:var(--sub); line-height:1.5;}
 
-  .pull-hint{text-align:center; font-size:12px; color:var(--sub); margin:2px 0 14px; opacity:.7;}
   .section-h{font-size:13px; font-weight:700; color:var(--accent); margin:0 0 6px;}
   .body-t{font-size:14px; line-height:1.65; color:#5c4b3a; margin:0 0 16px;}
   .note{font-size:12px; color:var(--sub); background:#f5ecdb; border-radius:10px; padding:10px 12px; line-height:1.5;}
@@ -140,7 +134,11 @@
 </div>
 
 <div class="sheet" id="sheet">
-  <div class="sheet-grip" id="grip"></div>
+  <div class="sheet-top">
+    <div class="sheet-grip"></div>
+    <div class="sheet-close" id="sheetClose">✕</div>
+    <div class="sheet-nav" id="sheetNav"></div>
+  </div>
   <div class="sheet-scroll" id="sheetScroll">
     <div class="sheet-in" id="sheetIn"></div>
   </div>
@@ -152,8 +150,7 @@ const DATA = {
   africa:{
     label:"아프리카", center:[6,34], zoom:4,
     countries:{
-      ethiopia:{
-        name:"에티오피아", center:[7.6,38.6], zoom:6.2, ring:[8.3,39.5], ringR:520000,
+      ethiopia:{ name:"에티오피아", iso:"ETH", center:[7.6,38.6], zoom:6.2,
         regions:[
           { id:"yirgacheffe", region:"게데오존 · Gedeo", title:"예가체프", coord:[6.162,38.205],
             tags:["basic","flavor"], swatch:"#8fae5d", emoji:"🌸",
@@ -187,8 +184,7 @@ const DATA = {
             about:"에티오피아 동부의 전통 건식 가공 산지. 물이 부족해 예로부터 내추럴이 발달했고, 강렬한 와이니 캐릭터로 알려져 있다." }
         ]
       },
-      kenya:{
-        name:"케냐", center:[-0.4,37.3], zoom:7, ring:[-0.4,37.3], ringR:220000,
+      kenya:{ name:"케냐", iso:"KEN", center:[-0.4,37.3], zoom:7,
         regions:[
           { id:"nyeri", region:"중부 고원 · Nyeri", title:"니에리", coord:[-0.42,36.95],
             coordFlag:"니에리 카운티 근사 중심점", tags:["basic","flavor"], swatch:"#a8324a", emoji:"🍇",
@@ -216,25 +212,24 @@ const DATA = {
   samerica:{
     label:"남미", center:[-14,-52], zoom:4,
     countries:{
-      brazil:{
-        name:"브라질", center:[-19,-46], zoom:6, ring:[-19,-46], ringR:420000,
+      brazil:{ name:"브라질", iso:"BRA", center:[-19,-46], zoom:6,
         regions:[
           { id:"cerrado", region:"미나스제라이스 · Cerrado", title:"세하도", coord:[-18.9,-47.5],
             coordFlag:"세하도 미네이루 근사 중심점", tags:["basic","flavor"], swatch:"#7a5230", emoji:"🍫",
             beanDesc:"크고 균일한 생두. 평지 대농장 기계 수확이 많아 상태가 고름.",
-            facts:{"가공":"내추럴·펄프드내추럴","고도":"900~1,250m","품종":"문도노보·카투아이","성격":"바디·단맛"},
+            facts:{"가공":"내추럴·펄프드","고도":"900~1,250m","품종":"문도노보·카투아이","성격":"바디·단맛"},
             flavor:"밀크초콜릿·헤이즐넛의 고소한 단맛, 캐러멜, 낮은 산미와 묵직한 바디. 블렌드/에스프레소 베이스로 인기.",
             about:"브라질 최초로 원산지 인증(DO)을 받은 산지. 뚜렷한 건기 덕에 내추럴 가공이 안정적이고 품질 균일성이 높다." },
           { id:"suldeminas", region:"미나스제라이스 · Sul de Minas", title:"술 지 미나스", coord:[-21.6,-45.5],
             coordFlag:"술 지 미나스 근사 중심점", tags:["basic","flavor"], swatch:"#8a5a34", emoji:"🥜",
             beanDesc:"브라질 생산량의 큰 비중을 차지하는 산지. 소~중규모 농장 다수.",
-            facts:{"가공":"내추럴·펄프드내추럴","고도":"850~1,250m","품종":"문도노보·카투아이·부르봉","성격":"밸런스"},
+            facts:{"가공":"내추럴·펄프드","고도":"850~1,250m","품종":"문도노보·카투아이·부르봉","성격":"밸런스"},
             flavor:"땅콩·아몬드 견과, 초콜릿, 부드러운 산미와 균형 잡힌 바디. 클래식한 브라질 프로파일.",
             about:"미나스제라이스 남부의 구릉 산지로, 브라질 아라비카의 핵심 생산지다. 다양한 품질대의 커피가 폭넓게 난다." },
           { id:"mogiana", region:"상파울루/미나스 · Mogiana", title:"모지아나", coord:[-20.9,-47.0],
             coordFlag:"모지아나 근사 중심점", tags:["basic","flavor"], swatch:"#96603a", emoji:"🍯",
             beanDesc:"붉은 토양의 전통 산지. 오래된 커피 재배 역사.",
-            facts:{"가공":"내추럴·펄프드내추럴","고도":"900~1,200m","품종":"문도노보·카투아이","성격":"단맛·바디"},
+            facts:{"가공":"내추럴·펄프드","고도":"900~1,200m","품종":"문도노보·카투아이","성격":"단맛·바디"},
             flavor:"캐러멜·꿀의 진한 단맛, 초콜릿, 부드러운 산미. 세하도보다 단맛이 조금 더 도드라지는 편.",
             about:"상파울루와 미나스제라이스 경계의 붉은 토양 지대. 브라질에서 손꼽히는 오래된 커피 산지 중 하나다." }
         ]
@@ -243,19 +238,22 @@ const DATA = {
   }
 };
 
+// 라벨 없는 타일: 국가/큰 지형만, 도시명 최소화
 const map = L.map('map',{zoomControl:true, attributionControl:true});
-L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',{
   maxZoom:18, attribution:'&copy; OpenStreetMap &copy; CARTO'
 }).addTo(map);
 
 let markers=[];
-let countryRing=null;
+let borderLayer=null;
 let currentCont='africa';
 let currentCountry=null;
 let currentFilter=null;
+let currentRegions=[];   // 현재 나라의 산지 배열(스와이프용)
+let currentIndex=0;
 
 function clearMarkers(){ markers.forEach(m=>map.removeLayer(m)); markers=[]; }
-function clearRing(){ if(countryRing){ map.removeLayer(countryRing); countryRing=null; } }
+function clearBorder(){ if(borderLayer){ map.removeLayer(borderLayer); borderLayer=null; } }
 function pinIcon(isCoe,dim){ return L.divIcon({className:'', iconSize:[16,16], iconAnchor:[8,16],
   html:'<div class="pin-dot '+(isCoe?'coe':'')+' '+(dim?'pin-dim':'')+'"></div>'}); }
 function labelIcon(text,dim){ return L.divIcon({className:'', iconSize:[0,0], iconAnchor:[-12,8],
@@ -283,26 +281,27 @@ function renderMarkers(){
     const dim = currentFilter && !match;
     const m=L.marker(r.coord,{icon:pinIcon(r.tags.includes('coe'),dim), opacity:dim?0.5:1}).addTo(map);
     const lbl=L.marker(r.coord,{icon:labelIcon(r.title,dim), interactive:false}).addTo(map);
-    if(!dim) m.on('click',()=>openSheet(r));
+    if(!dim) m.on('click',()=>openSheetByRegion(r));
     markers.push(m,lbl);
   });
 }
 
-function drawRing(country){
-  clearRing();
-  if(!country.ring) return;
-  countryRing=L.circle(country.ring,{
-    radius:country.ringR||300000, color:'#a9744f', weight:2.5,
-    fillColor:'#a9744f', fillOpacity:0.08, dashArray:'2,8'
-  }).addTo(map);
+// 국경선 (색 채움 없이 테두리만) - 공개 GeoJSON
+function drawBorder(iso, center, zoom){
+  clearBorder();
+  const url='https://raw.githubusercontent.com/johan/world.geo.json/master/countries/'+iso+'.geo.json';
+  fetch(url).then(r=>r.json()).then(gj=>{
+    borderLayer=L.geoJSON(gj,{style:{color:'#a9744f', weight:2.5, fill:false, dashArray:'1,6'}}).addTo(map);
+  }).catch(()=>{ /* 국경 로드 실패 시 마커만 표시 */ });
 }
 
 function selectCountry(k){
   currentCountry=k;
   const c=DATA[currentCont].countries[k];
+  currentRegions=c.regions;
   renderCountries();
   renderMarkers();
-  drawRing(c);
+  drawBorder(c.iso, c.center, c.zoom);
   map.setView(c.center,c.zoom,{animate:true});
   closeSheet();
 }
@@ -311,10 +310,11 @@ function selectContinent(cont){
   currentCont=cont;
   currentCountry=null;
   currentFilter=null;
+  currentRegions=[];
   document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
   renderCountries();
   clearMarkers();
-  clearRing();
+  clearBorder();
   closeSheet();
   const c=DATA[cont];
   map.setView(c.center,c.zoom,{animate:true});
@@ -325,9 +325,18 @@ function selectContinent(cont){
 const sheet=document.getElementById('sheet');
 const sheetIn=document.getElementById('sheetIn');
 const sheetScroll=document.getElementById('sheetScroll');
-function closeSheet(){ sheet.classList.remove('peek','full'); }
+const sheetNav=document.getElementById('sheetNav');
+function closeSheet(){ sheet.classList.remove('open'); }
 
-function openSheet(r){
+function openSheetByRegion(r){
+  currentIndex=currentRegions.findIndex(x=>x.id===r.id);
+  if(currentIndex<0) currentIndex=0;
+  paintSheet();
+  sheet.classList.add('open');
+}
+
+function paintSheet(){
+  const r=currentRegions[currentIndex];
   const badges=[];
   if(r.tags.includes('coe')) badges.push('<span class="badge coe">COE</span>');
   if(r.tags.includes('basic')) badges.push('<span class="badge basic">기본</span>');
@@ -336,46 +345,44 @@ function openSheet(r){
     '<div class="fact"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>').join('');
   const coordNote=r.coordFlag?'<div class="note">📍 '+r.coordFlag+'</div>':'';
   sheetIn.innerHTML=
+    '<div class="swipe-hint">← 좌우로 밀어 다른 원산지 →</div>'+
     '<div class="sheet-region">'+r.region+'</div>'+
     '<div class="sheet-title">'+r.title+'</div>'+
     '<div class="sheet-badges">'+badges.join('')+'</div>'+
     '<div class="bean"><div class="bean-swatch" style="background:'+r.swatch+'22;border:1px solid '+r.swatch+'55">'+r.emoji+'</div>'+
     '<div class="bean-desc">'+r.beanDesc+'</div></div>'+
-    '<div class="pull-hint">↑ 위로 올려 자세히 보기</div>'+
     '<div class="facts">'+facts+'</div>'+
     '<p class="section-h">맛 · 향</p><p class="body-t">'+r.flavor+'</p>'+
     '<p class="section-h">지역 설명</p><p class="body-t">'+r.about+'</p>'+
     coordNote;
+  // 페이지 점
+  sheetNav.innerHTML=currentRegions.map((x,i)=>
+    '<span class="dot '+(i===currentIndex?'on':'')+'"></span>').join('');
   sheetScroll.scrollTop=0;
-  sheet.classList.remove('full');
-  sheet.classList.add('peek');
-  // 마커가 시트에 가리지 않도록 위쪽으로 오프셋해서 이동
-  map.setView([r.coord[0]-0.35, r.coord[1]], 8, {animate:true});
+  // 지도도 해당 산지로 이동(시트에 안 가리게 위로 오프셋)
+  map.setView([r.coord[0]-0.25, r.coord[1]], Math.max(map.getZoom(),7), {animate:true});
 }
 
-// 시트 드래그: peek <-> full <-> close
-let startY=0, curY=0, dragging=false, startState='peek';
-document.getElementById('grip').addEventListener('touchstart',function(e){
-  startY=e.touches[0].clientY; dragging=true;
-  startState = sheet.classList.contains('full')?'full':'peek';
-  sheet.classList.add('dragging');
+function goRegion(dir){
+  if(currentRegions.length<2) return;
+  currentIndex=(currentIndex+dir+currentRegions.length)%currentRegions.length;
+  paintSheet();
+}
+
+// 좌우 스와이프 (스크롤 영역 위, 세로스크롤과 구분)
+let sx=0, sy=0, swiping=false;
+sheetScroll.addEventListener('touchstart',function(e){
+  sx=e.touches[0].clientX; sy=e.touches[0].clientY; swiping=true;
 },{passive:true});
-document.getElementById('grip').addEventListener('touchmove',function(e){
-  if(!dragging) return;
-  curY=e.touches[0].clientY;
-},{passive:true});
-document.getElementById('grip').addEventListener('touchend',function(){
-  if(!dragging) return;
-  dragging=false; sheet.classList.remove('dragging');
-  const dy=curY-startY;
-  if(startState==='peek'){
-    if(dy<-40){ sheet.classList.remove('peek'); sheet.classList.add('full'); }
-    else if(dy>60){ closeSheet(); }
-  }else{ // full
-    if(dy>40){ sheet.classList.remove('full'); sheet.classList.add('peek'); }
+sheetScroll.addEventListener('touchend',function(e){
+  if(!swiping) return; swiping=false;
+  const dx=e.changedTouches[0].clientX - sx;
+  const dy=e.changedTouches[0].clientY - sy;
+  if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.5){
+    goRegion(dx<0?1:-1);
   }
-  curY=startY;
 });
+document.getElementById('sheetClose').addEventListener('click',closeSheet);
 
 document.getElementById('tabs').addEventListener('click',function(e){
   const t=e.target.closest('.tab'); if(!t) return;
@@ -391,11 +398,9 @@ document.getElementById('chips').addEventListener('click',function(e){
   const c=e.target.closest('.chip'); if(!c) return;
   const f=c.dataset.f;
   if(currentFilter===f){ currentFilter=null; c.classList.remove('active'); }
-  else{
-    currentFilter=f;
+  else{ currentFilter=f;
     document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
-    c.classList.add('active');
-  }
+    c.classList.add('active'); }
   renderMarkers();
 });
 document.getElementById('search').addEventListener('input',function(e){
@@ -406,11 +411,13 @@ document.getElementById('search').addEventListener('input',function(e){
     for(const r of country.regions){
       if(r.title.toLowerCase().includes(q)||r.region.toLowerCase().includes(q)){
         if(currentCountry!==ck) selectCountry(ck);
-        openSheet(r); return;
+        setTimeout(()=>openSheetByRegion(r),150); return;
       }
     }
   }
 });
+// 빈 지도 누르면 시트 닫힘
+map.on('click',function(){ closeSheet(); });
 
 selectContinent('africa');
 </script>
