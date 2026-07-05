@@ -544,7 +544,12 @@ function paintSheet(){
   sheetScroll.scrollTop=0;
   highlight(r.id);
   document.querySelectorAll('.city').forEach(el=>el.classList.toggle('active',el.dataset.r===r.id));
-  map.setView([r.coord[0]-0.12, r.coord[1]], Math.max(map.getZoom(),7), {animate:true});
+  // 나라 기본 줌을 유지한 채, 마커를 시트 위 영역에 오도록 화면 아래쪽에 배치
+  const cc=DATA[currentCont].countries[currentCountry];
+  const z=cc?cc.zoom:map.getZoom();
+  map.setView(r.coord, z, {animate:true});
+  // 시트(42dvh)에 가리지 않게 위로 밀어 올림
+  setTimeout(()=>{ map.panBy([0, -window.innerHeight*0.18], {animate:true}); }, 260);
 }
 
 function goRegion(dir){
