@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="생두지도">
+<meta name="theme-color" content="#3d2b1f">
+<title>생두지도 Bean Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root{
+    --bg:#f6efe6; --panel:#fbf6ee; --ink:#3d2b1f; --sub:#8a7a68;
+    --line:#e6d9c8; --accent:#6f4e37; --accent2:#a9744f; --pin:#7a4a2b;
+    --green:#5b6b3a; --gold:#b8863b;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI",sans-serif;
+    background:var(--bg); color:var(--ink); overflow:hidden;
+  }
+  #app{display:flex; flex-direction:column; height:100dvh;}
+
+  header{padding:env(safe-area-inset-top) 16px 0; background:var(--bg); z-index:5;}
+  .brand{display:flex; align-items:baseline; gap:10px; padding:14px 2px 10px;}
+  .brand h1{font-size:26px; margin:0; letter-spacing:-.5px;}
+  .brand span{font-size:14px; color:var(--sub); font-weight:500;}
+
+  .tabs{display:flex; gap:8px; padding:0 0 10px;}
+  .tab{
+    flex:1; padding:12px 0; text-align:center; border:1px solid var(--line);
+    border-radius:14px; background:var(--panel); color:var(--sub);
+    font-size:15px; font-weight:600; cursor:pointer; transition:.15s;
+  }
+  .tab.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+
+  .countries{display:flex; gap:8px; overflow-x:auto; padding:0 0 12px; scrollbar-width:none;}
+  .countries::-webkit-scrollbar{display:none;}
+  .country{
+    flex:0 0 auto; padding:9px 16px; border:1px solid var(--line); border-radius:20px;
+    background:var(--panel); color:var(--sub); font-size:14px; font-weight:700; cursor:pointer; transition:.15s;
+  }
+  .country.active{background:var(--accent2); color:#fff; border-color:var(--accent2);}
+  .country.empty{opacity:.45;}
+
+  .chips{display:flex; gap:7px; overflow-x:auto; padding:0 0 12px; scrollbar-width:none;}
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:0 0 auto; padding:8px 14px; border:1px solid var(--line); border-radius:20px;
+    background:var(--panel); color:var(--sub); font-size:13px; font-weight:600; cursor:pointer; transition:.15s; white-space:nowrap;
+  }
+  .chip.active{background:var(--accent2); color:#fff; border-color:var(--accent2);}
+
+  #map{flex:1; width:100%; background:#dfe6e2; position:relative;}
+
+  .searchbar{
+    padding:10px 16px calc(10px + env(safe-area-inset-bottom)); background:var(--bg);
+    border-top:1px solid var(--line);
+  }
+  .search{
+    width:100%; padding:14px 16px; border:1px solid var(--line); border-radius:14px;
+    background:var(--panel); font-size:15px; color:var(--ink); outline:none;
+  }
+  .search::placeholder{color:#b9ab99;}
+
+  .sheet{
+    position:fixed; left:0; right:0; bottom:0; z-index:1000;
+    background:var(--panel); border-radius:20px 20px 0 0;
+    box-shadow:0 -8px 30px rgba(0,0,0,.18);
+    transform:translateY(110%); transition:transform .28s cubic-bezier(.2,.8,.2,1);
+    max-height:76dvh; overflow-y:auto; padding-bottom:env(safe-area-inset-bottom);
+    touch-action:pan-y;
+  }
+  .sheet.open{transform:translateY(0);}
+  .sheet.dragging{transition:none;}
+  .sheet-grip{width:44px; height:5px; background:var(--line); border-radius:3px; margin:10px auto 4px;}
+  .sheet-in{padding:6px 20px 26px;}
+  .sheet-region{font-size:13px; color:var(--accent2); font-weight:700; letter-spacing:.3px;}
+  .sheet-title{font-size:24px; margin:2px 0 4px; letter-spacing:-.5px;}
+  .sheet-badges{display:flex; gap:6px; flex-wrap:wrap; margin:8px 0 14px;}
+  .badge{font-size:12px; font-weight:700; padding:5px 10px; border-radius:8px;}
+  .badge.coe{background:#f5ecdb; color:var(--gold);}
+  .badge.basic{background:#efe7db; color:var(--accent);}
+  .badge.fr{background:#e7ede1; color:var(--green);}
+
+  .facts{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;}
+  .fact{background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:10px 12px;}
+  .fact .k{font-size:11px; color:var(--sub); font-weight:600; margin-bottom:3px;}
+  .fact .v{font-size:15px; font-weight:700;}
+
+  .bean{display:flex; align-items:center; gap:14px; background:var(--bg);
+    border:1px solid var(--line); border-radius:14px; padding:12px; margin-bottom:14px;}
+  .bean-swatch{width:56px; height:56px; border-radius:12px; flex:0 0 auto;
+    display:flex; align-items:center; justify-content:center; font-size:26px;}
+  .bean-desc{font-size:13px; color:var(--sub); line-height:1.5;}
+
+  .section-h{font-size:13px; font-weight:700; color:var(--accent); margin:0 0 6px;}
+  .body-t{font-size:14px; line-height:1.65; color:#5c4b3a; margin:0 0 16px;}
+  .note{font-size:12px; color:var(--sub); background:#f5ecdb; border-radius:10px; padding:10px 12px; line-height:1.5;}
+
+  .pin-label{background:var(--panel); border:1px solid var(--line); color:var(--ink);
+    font-size:12px; font-weight:700; padding:3px 8px; border-radius:8px;
+    box-shadow:0 2px 6px rgba(0,0,0,.12); white-space:nowrap;}
+  .pin-dot{width:16px; height:16px; border-radius:50% 50% 50% 0; background:var(--pin);
+    transform:rotate(-45deg); border:2px solid #fff; box-shadow:0 2px 5px rgba(0,0,0,.3);}
+  .pin-dot.coe{background:var(--gold);}
+  .pin-dim{opacity:.28;}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand"><h1>생두지도</h1><span>Bean Map</span></div>
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-cont="africa">아프리카</div>
+      <div class="tab" data-cont="asia">아시아</div>
+      <div class="tab" data-cont="samerica">남미</div>
+    </div>
+    <div class="countries" id="countries"></div>
+    <div class="chips" id="chips">
+      <div class="chip" data-f="basic">기본</div>
+      <div class="chip" data-f="coe">COE</div>
+      <div class="chip" data-f="flavor">맛·향</div>
+      <div class="chip" data-f="franchise">프랜차이즈</div>
+    </div>
+  </header>
+
+  <div id="map"></div>
+
+  <div class="searchbar">
+    <input class="search" id="search" placeholder="지역 검색 (예: 예가체프, 시다모, 구지)">
+  </div>
+</div>
+
+<div class="sheet" id="sheet">
+  <div class="sheet-grip"></div>
+  <div class="sheet-in" id="sheetIn"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const DATA = {
+  africa:{
+    label:"아프리카", center:[8.5,38.7], zoom:6,
+    countries:{
+      ethiopia:{
+        name:"에티오피아", center:[7.6,38.6], zoom:6.3,
+        regions:[
+          { id:"yirgacheffe", region:"게데오존 · Gedeo", title:"예가체프", coord:[6.162,38.205],
+            tags:["basic","flavor"], swatch:"#8fae5d", emoji:"🌸",
+            beanDesc:"작고 균일한 청록빛 생두. 워시드가 많아 결점두 적고 표면이 깨끗함.",
+            facts:{"가공":"주로 워시드","고도":"1,750~2,200m","품종":"재래종(Heirloom)","성격":"플로럴·산미"},
+            flavor:"자스민·베르가못의 꽃향, 레몬·라임 감귤, 홍차 같은 은은한 탄닌. 바디는 가볍고 깔끔.",
+            about:"단일 농장이 아니라 게데오존 전역을 아우르는 산지명. 안에 코체레·게데브 등 세부 구역과 수백 개 워싱스테이션이 있어, 이 점은 지역 대표점이다." },
+          { id:"sidama", region:"시다모존 · Sidama", title:"시다모", coord:[6.70,38.42],
+            coordFlag:"시다모 지역 근사 중심점", tags:["basic","coe","flavor"], swatch:"#c25b4a", emoji:"🍓",
+            beanDesc:"워시드/내추럴 모두 유명. 내추럴은 과일향 전구체가 풍부해 표면이 짙음.",
+            facts:{"COE":"2025 1위 Basha Bekele","점수":"90.5 · 내추럴","고도":"1,700~2,360m","품종":"재래종·74158"},
+            flavor:"딸기·라즈베리 베리류, 자스민, 꿀 단맛, 복숭아·감귤의 화사함. 아주 깨끗하고 주시함.",
+            about:"에티오피아 대표 산지 중 하나. COE 2025 1위 Basha Bekele가 이 존 소속이다. 개별 농장 정밀 좌표는 공개 자료로 확정되지 않아 지역 중심에 표시했다." },
+          { id:"guji", region:"구지존 · Guji", title:"구지", coord:[5.95,38.90],
+            coordFlag:"구지 지역 근사 중심점", tags:["basic","flavor"], swatch:"#b5643c", emoji:"🍑",
+            beanDesc:"근래 각광받는 산지. 내추럴 로트가 특히 인기.",
+            facts:{"가공":"워시드·내추럴","고도":"1,800~2,300m","품종":"재래종","성격":"과일·단맛"},
+            flavor:"블루베리·복숭아 같은 잘 익은 과일, 진한 단맛, 시다모보다 무게감 있는 바디.",
+            about:"과거 시다모로 묶였다가 독립 산지로 자리 잡았다. 내추럴 가공에서 강한 과일 캐릭터로 유명하다." },
+          { id:"limu", region:"오로미아 · Limu", title:"리무", coord:[7.99,36.95],
+            coordFlag:"리무 지역 근사 중심점", tags:["basic","flavor"], swatch:"#9c7b3d", emoji:"🍵",
+            beanDesc:"주로 워시드. 균형 잡힌 클래식한 컵.",
+            facts:{"가공":"주로 워시드","고도":"1,400~2,000m","품종":"재래종","성격":"균형·부드러움"},
+            flavor:"부드러운 산미, 은은한 스파이스와 와인 뉘앙스, 둥근 바디. 튀지 않고 균형적.",
+            about:"에티오피아 남서부의 전통 워시드 산지. 예가체프처럼 화사하기보다 균형과 부드러움이 특징이다." },
+          { id:"harrar", region:"동부 고원 · Harrar", title:"하라", coord:[9.31,42.12],
+            coordFlag:"하라 지역 근사 중심점", tags:["basic","flavor"], swatch:"#7a3b2e", emoji:"🍫",
+            beanDesc:"거의 내추럴(건식) 가공. 알이 크고 불균일한 편.",
+            facts:{"가공":"내추럴(건식)","고도":"1,500~2,100m","품종":"재래종","성격":"묵직·와이니"},
+            flavor:"블루베리·와인 같은 발효 과일향, 다크초콜릿, 묵직한 바디. 남부 워시드와 정반대 성격.",
+            about:"에티오피아 동부의 전통 건식 가공 산지. 물이 부족해 예로부터 내추럴이 발달했고, 강렬한 와이니 캐릭터로 알려져 있다." }
+        ]
+      }
+    }
+  },
+  asia:{ label:"아시아", center:[10,105], zoom:4, countries:{} },
+  samerica:{ label:"남미", center:[-10,-60], zoom:3.4, countries:{} }
+};
+
+const map = L.map('map',{zoomControl:true, attributionControl:true});
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+  maxZoom:18, attribution:'&copy; OpenStreetMap &copy; CARTO'
+}).addTo(map);
+
+let markers=[];
+let currentCont='africa';
+let currentCountry=null;
+let currentFilter=null;
+
+function clearMarkers(){ markers.forEach(m=>map.removeLayer(m)); markers=[]; }
+function pinIcon(isCoe,dim){ return L.divIcon({className:'', iconSize:[16,16], iconAnchor:[8,16],
+  html:'<div class="pin-dot '+(isCoe?'coe':'')+' '+(dim?'pin-dim':'')+'"></div>'}); }
+function labelIcon(text,dim){ return L.divIcon({className:'', iconSize:[0,0], iconAnchor:[-12,8],
+  html:'<div class="pin-label '+(dim?'pin-dim':'')+'">'+text+'</div>'}); }
+
+function renderCountries(){
+  const box=document.getElementById('countries');
+  const cont=DATA[currentCont];
+  const keys=Object.keys(cont.countries);
+  if(keys.length===0){ box.innerHTML='<div class="country empty">준비 중</div>'; return; }
+  box.innerHTML=keys.map(k=>{
+    const c=cont.countries[k];
+    const on=(k===currentCountry)?'active':'';
+    return '<div class="country '+on+'" data-c="'+k+'">'+c.name+'</div>';
+  }).join('');
+}
+
+function renderMarkers(){
+  clearMarkers();
+  const cont=DATA[currentCont];
+  if(!currentCountry || !cont.countries[currentCountry]) return;
+  const country=cont.countries[currentCountry];
+  country.regions.forEach(r=>{
+    const match = !currentFilter || r.tags.includes(currentFilter);
+    const dim = currentFilter && !match;
+    const m=L.marker(r.coord,{icon:pinIcon(r.tags.includes('coe'),dim), opacity:dim?0.5:1}).addTo(map);
+    const lbl=L.marker(r.coord,{icon:labelIcon(r.title,dim), interactive:false}).addTo(map);
+    if(!dim) m.on('click',()=>openSheet(r));
+    markers.push(m,lbl);
+  });
+}
+
+function selectCountry(k){
+  currentCountry=k;
+  const c=DATA[currentCont].countries[k];
+  renderCountries();
+  renderMarkers();
+  map.setView(c.center,c.zoom,{animate:true});
+  closeSheet();
+}
+
+function selectContinent(cont){
+  currentCont=cont;
+  currentCountry=null;
+  currentFilter=null;
+  document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+  renderCountries();
+  clearMarkers();
+  closeSheet();
+  const c=DATA[cont];
+  map.setView(c.center,c.zoom,{animate:true});
+  const keys=Object.keys(c.countries);
+  if(keys.length===1) selectCountry(keys[0]);
+}
+
+const sheet=document.getElementById('sheet');
+const sheetIn=document.getElementById('sheetIn');
+function closeSheet(){ sheet.classList.remove('open'); }
+
+function openSheet(r){
+  const badges=[];
+  if(r.tags.includes('coe')) badges.push('<span class="badge coe">COE</span>');
+  if(r.tags.includes('basic')) badges.push('<span class="badge basic">기본</span>');
+  if(r.tags.includes('franchise')) badges.push('<span class="badge fr">프랜차이즈</span>');
+  const facts=Object.entries(r.facts).map(([k,v])=>
+    '<div class="fact"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>').join('');
+  const coordNote=r.coordFlag?'<div class="note">📍 '+r.coordFlag+'</div>':'';
+  sheetIn.innerHTML=
+    '<div class="sheet-region">'+r.region+'</div>'+
+    '<div class="sheet-title">'+r.title+'</div>'+
+    '<div class="sheet-badges">'+badges.join('')+'</div>'+
+    '<div class="bean"><div class="bean-swatch" style="background:'+r.swatch+'22;border:1px solid '+r.swatch+'55">'+r.emoji+'</div>'+
+    '<div class="bean-desc">'+r.beanDesc+'</div></div>'+
+    '<div class="facts">'+facts+'</div>'+
+    '<p class="section-h">맛 · 향</p><p class="body-t">'+r.flavor+'</p>'+
+    '<p class="section-h">지역 설명</p><p class="body-t">'+r.about+'</p>'+
+    coordNote;
+  sheet.classList.add('open');
+  map.setView(r.coord,8,{animate:true});
+}
+
+let startY=0, curY=0, dragging=false;
+sheet.addEventListener('touchstart',function(e){
+  if(sheet.scrollTop>0) return;
+  startY=e.touches[0].clientY; dragging=true; sheet.classList.add('dragging');
+},{passive:true});
+sheet.addEventListener('touchmove',function(e){
+  if(!dragging) return;
+  curY=e.touches[0].clientY;
+  const dy=curY-startY;
+  if(dy>0) sheet.style.transform='translateY('+dy+'px)';
+},{passive:true});
+sheet.addEventListener('touchend',function(){
+  if(!dragging) return;
+  dragging=false; sheet.classList.remove('dragging'); sheet.style.transform='';
+  if(curY-startY>90) closeSheet();
+});
+document.querySelector('.sheet-grip').addEventListener('click',closeSheet);
+
+document.getElementById('tabs').addEventListener('click',function(e){
+  const t=e.target.closest('.tab'); if(!t) return;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  selectContinent(t.dataset.cont);
+});
+document.getElementById('countries').addEventListener('click',function(e){
+  const c=e.target.closest('.country'); if(!c||c.classList.contains('empty')) return;
+  selectCountry(c.dataset.c);
+});
+document.getElementById('chips').addEventListener('click',function(e){
+  const c=e.target.closest('.chip'); if(!c) return;
+  const f=c.dataset.f;
+  if(currentFilter===f){ currentFilter=null; c.classList.remove('active'); }
+  else{
+    currentFilter=f;
+    document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active');
+  }
+  renderMarkers();
+});
+document.getElementById('search').addEventListener('input',function(e){
+  const q=e.target.value.trim().toLowerCase(); if(!q) return;
+  const cont=DATA[currentCont];
+  for(const ck in cont.countries){
+    const country=cont.countries[ck];
+    for(const r of country.regions){
+      if(r.title.toLowerCase().includes(q)||r.region.toLowerCase().includes(q)){
+        if(currentCountry!==ck) selectCountry(ck);
+        openSheet(r); return;
+      }
+    }
+  }
+});
+
+selectContinent('africa');
+</script>
+</body>
+</html>
