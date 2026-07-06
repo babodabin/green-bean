@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7d5a3c"/>
+      <stop offset="1" stop-color="#5a3d28"/>
+    </linearGradient>
+  </defs>
+  <!-- 풀블리드 배경 (iOS가 모서리를 자동으로 깎음) -->
+  <rect width="120" height="120" fill="url(#bg)"/>
+  <!-- 바닥 그림자 -->
+  <ellipse cx="60" cy="98" rx="18" ry="5" fill="#000000" opacity="0.18"/>
+  <!-- 물방울 위치핀 -->
+  <path d="M60 24 C44 24 32 36 32 52 C32 74 60 92 60 92 C60 92 88 74 88 52 C88 36 76 24 60 24 Z" fill="#f6efe6"/>
+  <!-- 생두 -->
+  <ellipse cx="60" cy="50" rx="14" ry="17" fill="#8fae5d"/>
+  <path d="M60 35 Q54 50 60 65" stroke="#5a3d28" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+</svg>
