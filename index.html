@@ -381,7 +381,7 @@ const DATA = {
         flavor:"베리·건과일, 향신료, 진한 단맛과 무거운 바디. 지역마다 편차가 크고 개성이 강하다.",
         about:"사나 서쪽 하라즈 산악지대. 수백 년 된 계단식 밭에서 전통 방식으로 재배·건조하는 예멘 대표 산지다." }
     ]},
-    jamaica:{ name:"자메이카", iso:"JAM", center:[18.1,-77.3], zoom:9, regions:[
+    jamaica:{ name:"자메이카", iso:"JAM", center:[18.1,-77.3], zoom:8, regions:[
       { id:"bluemountain", region:"블루마운틴 · Blue Mountain", title:"블루마운틴", coord:[18.05,-76.65],
         coordFlag:"블루마운틴 산맥 근사 중심점", tags:["basic","flavor"], swatch:"#3b5b6b", emoji:"🏔️",
         beanDesc:"크고 균일한 생두. 엄격한 인증·통(barrel) 포장으로 유명.",
@@ -487,13 +487,22 @@ function selectCountry(k){
   renderCities();
 
   if(c.iso && !c.noBorder) loadBorder(c.iso,'#a9744f',2.5);
+  const pts=[];
   c.regions.forEach(r=>{
     const pin=L.marker(r.coord,{icon:pinIcon(r.tags.includes('coe'))}).addTo(map);
     const label=L.marker(r.coord,{icon:labelIcon(r.title), interactive:false}).addTo(map);
     pin.on('click',()=>openSheetByRegion(r));
     markers[r.id]={pin,label};
+    pts.push(r.coord);
   });
-  map.setView(c.center,c.zoom,{animate:true});
+  if(pts.length>=2){
+    // 마커들을 담되 넉넉한 여백을 줘서 꽉 차지 않고 나라 윤곽도 보이게
+    const b=L.latLngBounds(pts).pad(0.8);
+    map.fitBounds(b, {animate:true, maxZoom:7});
+  }else{
+    // 산지 1곳: 그 지점 기준 적당한 줌
+    map.setView(pts[0]||c.center, Math.min(c.zoom,7), {animate:true});
+  }
 }
 
 // 도시(산지) 칩 렌더
