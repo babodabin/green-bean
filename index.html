@@ -429,6 +429,12 @@ let viewGen=0;    // 대륙/나라 전환 세대: 늦게 도착한 국경 응답
 let focusToken=0; // 카메라 이동 예약 토큰: 마커 이동이 국경 맞춤보다 우선
 
 function clearMarkers(){ Object.values(markers).forEach(o=>{map.removeLayer(o.pin); map.removeLayer(o.label);}); markers={}; }
+// 시트(42dvh)가 지도를 '실제로' 가리는 픽셀 높이 (+여유)
+function sheetPad(){
+  const mapRect=document.getElementById('map').getBoundingClientRect();
+  const sheetTop=window.innerHeight*0.58; // 시트 top = 100dvh - 42dvh
+  return Math.max(40, mapRect.bottom - sheetTop + 30);
+}
 function clearBorders(){ borderLayers.forEach(l=>map.removeLayer(l)); borderLayers=[]; }
 function clearCountryLabels(){ countryLabels.forEach(l=>map.removeLayer(l)); countryLabels=[]; }
 function pinIcon(cls){ return L.divIcon({className:'', iconSize:[16,16], iconAnchor:[8,16],
@@ -520,7 +526,7 @@ function selectCountry(k){
 
   const mapH=document.getElementById('map').clientHeight;
   // 하단 시트(42dvh)에 가리지 않도록 아래쪽 패딩
-  const fitOpts={animate:true, paddingTopLeft:[16,16], paddingBottomRight:[16, mapH*0.42]};
+  const fitOpts={animate:true, paddingTopLeft:[18,18], paddingBottomRight:[18, sheetPad()]};
   function fitToMarkers(){
     if(pts.length>=2){
       map.fitBounds(L.latLngBounds(pts).pad(0.4), Object.assign({maxZoom:7}, fitOpts));
@@ -538,7 +544,7 @@ function selectCountry(k){
       if(gen!==viewGen) return;   // 그 사이 다른 대륙/나라로 이동함
       if(ft!==focusToken) return; // 그 사이 마커를 눌러 카메라가 이미 이동함
       if(layer && layer.getBounds && layer.getBounds().isValid()){
-        map.fitBounds(layer.getBounds(), fitOpts);
+        map.fitBounds(layer.getBounds().pad(0.05), fitOpts);
       }else{
         fitToMarkers();            // 국경 로딩 실패 시 마커 기준으로
       }
@@ -732,8 +738,7 @@ function selectBrand(k){
     pts.push(c.center);
   });
   if(pts.length){
-    const mapH=document.getElementById('map').clientHeight;
-    map.fitBounds(L.latLngBounds(pts), {animate:true, paddingTopLeft:[30,30], paddingBottomRight:[30, mapH*0.42]});
+    map.fitBounds(L.latLngBounds(pts), {animate:true, paddingTopLeft:[30,30], paddingBottomRight:[30, sheetPad()]});
   }
   openBrandSheet(b);
 }
