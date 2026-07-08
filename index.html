@@ -119,7 +119,7 @@
 <body>
 <div id="app">
   <header>
-    <div class="brand"><h1>커피산지</h1><span>Coffee Origins</span></div>
+    <div class="brand"><h1>커피산지</h1><span>Coffee Origins · v3</span></div>
     <div class="tabs" id="tabs">
       <div class="tab" data-cont="africa">아프리카</div>
       <div class="tab" data-cont="asia">아시아</div>
@@ -429,11 +429,15 @@ let viewGen=0;    // 대륙/나라 전환 세대: 늦게 도착한 국경 응답
 let focusToken=0; // 카메라 이동 예약 토큰: 마커 이동이 국경 맞춤보다 우선
 
 function clearMarkers(){ Object.values(markers).forEach(o=>{map.removeLayer(o.pin); map.removeLayer(o.label);}); markers={}; }
-// 시트(42dvh)가 지도를 '실제로' 가리는 픽셀 높이 (+여유)
+// 시트가 지도를 '실제로' 가리는 픽셀 높이 (+여유)
 function sheetPad(){
   const mapRect=document.getElementById('map').getBoundingClientRect();
-  const sheetTop=window.innerHeight*0.58; // 시트 top = 100dvh - 42dvh
-  return Math.max(40, mapRect.bottom - sheetTop + 30);
+  // 시트 요소의 실제 높이를 직접 측정 (transform은 높이에 영향 없음)
+  const sheetH=(document.getElementById('sheet').getBoundingClientRect().height)||(window.innerHeight*0.42);
+  const sheetTop=window.innerHeight-sheetH;
+  const pad=Math.max(40, mapRect.bottom - sheetTop + 30);
+  // 지도가 아주 작은 화면에서 가용 영역이 0이 되지 않게 상한
+  return Math.min(pad, mapRect.height*0.7);
 }
 function clearBorders(){ borderLayers.forEach(l=>map.removeLayer(l)); borderLayers=[]; }
 function clearCountryLabels(){ countryLabels.forEach(l=>map.removeLayer(l)); countryLabels=[]; }
