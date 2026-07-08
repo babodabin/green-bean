@@ -119,7 +119,7 @@
 <body>
 <div id="app">
   <header>
-    <div class="brand"><h1>커피산지</h1><span>Coffee Origins · v3</span></div>
+    <div class="brand"><h1>커피산지</h1><span>Coffee Origins · v4</span></div>
     <div class="tabs" id="tabs">
       <div class="tab" data-cont="africa">아프리카</div>
       <div class="tab" data-cont="asia">아시아</div>
@@ -153,7 +153,7 @@
 <script>
 const DATA = {
   africa:{ label:"아프리카", center:[6,34], zoom:4, countries:{
-    ethiopia:{ name:"에티오피아", intro:{"생산구조":"소농 수십만 명이 체리를 워싱스테이션에 모아 가공. '농장'이 아니라 지역·스테이션 단위로 유통.", "등급":"G1~G5 (결점두 수 기준, G1이 최상급).", "대표성격":"워시드=꽃·감귤·홍차 / 내추럴=베리·와인. 아라비카의 원산지.", "가격·용도":"중~고가. 스페셜티 핸드드립의 대표 산지. 예가체프·게이샤 로트는 고가."}, iso:"ETH", center:[8.6,40.0], zoom:5.4, regions:[
+    ethiopia:{ name:"에티오피아", intro:{"생산구조":"소농 수십만 명이 체리를 워싱스테이션에 모아 가공. '농장'이 아니라 지역·스테이션 단위로 유통.", "등급":"G1~G5 (결점두 수 기준, G1이 최상급).", "대표성격":"워시드=꽃·감귤·홍차 / 내추럴=베리·와인. 아라비카의 원산지.", "가격·용도":"중~고가. 스페셜티 핸드드립의 대표 산지. 예가체프·게이샤 로트는 고가."}, iso:"ETH", bbox:[[3.42,32.95],[14.96,47.79]], center:[8.6,40.0], zoom:5.4, regions:[
       { id:"yirgacheffe", region:"게데오존 · Gedeo", title:"예가체프", coord:[6.162,38.205],
         tags:["basic","flavor"], swatch:"#8fae5d", emoji:"🌸",
         beanDesc:"작고 균일한 청록빛 생두. 워시드가 많아 결점두 적고 표면이 깨끗함.",
@@ -185,7 +185,7 @@ const DATA = {
         flavor:"블루베리·와인 같은 발효 과일향, 다크초콜릿, 묵직한 바디. 남부 워시드와 정반대 성격.",
         about:"에티오피아 동부의 전통 건식 가공 산지. 물이 부족해 예로부터 내추럴이 발달했고, 강렬한 와이니 캐릭터로 알려져 있다." }
     ]},
-    kenya:{ name:"케냐", intro:{"생산구조":"소농 협동조합(팩토리) 중심. 워싱스테이션 단위로 엄격히 관리.", "등급":"AA·AB·PB (콩 크기 기준, AA가 최대·최상급 취급).", "대표성격":"카시스·토마토의 강한 산미, SL28·SL34 품종. 이중 발효 워시드.", "가격·용도":"중~고가. 산미 강한 싱글 오리진 핸드드립으로 인기."}, iso:"KEN", center:[0.2,37.9], zoom:6, regions:[
+    kenya:{ name:"케냐", intro:{"생산구조":"소농 협동조합(팩토리) 중심. 워싱스테이션 단위로 엄격히 관리.", "등급":"AA·AB·PB (콩 크기 기준, AA가 최대·최상급 취급).", "대표성격":"카시스·토마토의 강한 산미, SL28·SL34 품종. 이중 발효 워시드.", "가격·용도":"중~고가. 산미 강한 싱글 오리진 핸드드립으로 인기."}, iso:"KEN", bbox:[[-4.68,33.89],[5.51,41.86]], center:[0.2,37.9], zoom:6, regions:[
       { id:"nyeri", region:"중부 고원 · Nyeri", title:"니에리", coord:[-0.42,36.95],
         coordFlag:"니에리 카운티 근사 중심점", tags:["basic","flavor"], swatch:"#a8324a", emoji:"🍇",
         beanDesc:"회록빛 큰 생두. SL28·SL34 품종이 많고 밀도가 높음.",
@@ -207,7 +207,7 @@ const DATA = {
     ]}
   }},
   asia:{ label:"아시아", center:[2,115], zoom:4, countries:{
-    indonesia:{ name:"인도네시아", intro:{"생산구조":"수마트라·술라웨시는 소농 중심, 자바는 국영 대농장. 습식 탈각(길링바사) 발달.", "등급":"결점두 수 기준 (Grade 1이 최상). 만델링은 별도 명칭.", "대표성격":"흙내·향신료·다크초콜릿, 낮은 산미와 아주 묵직한 바디.", "가격·용도":"중가. 블렌드·에스프레소 베이스, 다크로스팅에 잘 쓰임."}, iso:"IDN", center:[-2,118], zoom:4.5, regions:[
+    indonesia:{ name:"인도네시아", intro:{"생산구조":"수마트라·술라웨시는 소농 중심, 자바는 국영 대농장. 습식 탈각(길링바사) 발달.", "등급":"결점두 수 기준 (Grade 1이 최상). 만델링은 별도 명칭.", "대표성격":"흙내·향신료·다크초콜릿, 낮은 산미와 아주 묵직한 바디.", "가격·용도":"중가. 블렌드·에스프레소 베이스, 다크로스팅에 잘 쓰임."}, iso:"IDN", bbox:[[-10.36,95.29],[5.48,141.03]], center:[-2,118], zoom:4.5, regions:[
       { id:"gayo", region:"수마트라 · Gayo", title:"수마트라(가요)", coord:[4.6,96.85],
         coordFlag:"가요 고원 근사 중심점", tags:["basic","flavor"], swatch:"#4e5b3a", emoji:"🌿",
         beanDesc:"불규칙한 짙은 청록빛 생두. 길링 바사(습식 탈각) 특유의 거친 외형.",
@@ -227,7 +227,7 @@ const DATA = {
         flavor:"다크초콜릿·향신료, 잘 익은 과일의 은은한 단맛, 낮은 산미와 시럽 같은 바디.",
         about:"술라웨시 중부 고지대 산지. 수마트라만큼 묵직하지만 좀 더 정제된 클린컵으로 평가된다." }
     ]},
-    india:{ name:"인도", intro:{"생산구조":"카르나타카 중심의 대~중형 농원. 아라비카·로부스타 모두 재배.", "등급":"플랜테이션 A 등 (크기·품질). 몬순 말라바르는 별도 특수 가공.", "대표성격":"몬순드=무산미·흙내 / 아라비카=향신료·초콜릿.", "가격·용도":"중~저가. 몬순 말라바르는 에스프레소 블렌드에 개성용으로 소량 사용."}, iso:"IND", center:[15,78], zoom:4.6, regions:[
+    india:{ name:"인도", intro:{"생산구조":"카르나타카 중심의 대~중형 농원. 아라비카·로부스타 모두 재배.", "등급":"플랜테이션 A 등 (크기·품질). 몬순 말라바르는 별도 특수 가공.", "대표성격":"몬순드=무산미·흙내 / 아라비카=향신료·초콜릿.", "가격·용도":"중~저가. 몬순 말라바르는 에스프레소 블렌드에 개성용으로 소량 사용."}, iso:"IND", bbox:[[7.97,68.18],[35.49,97.4]], center:[15,78], zoom:4.6, regions:[
       { id:"malabar", region:"말라바르 해안 · Monsooned", title:"몬순 말라바르", coord:[11.5,75.6],
         coordFlag:"말라바르 해안 지역 근사 중심점", tags:["basic","flavor"], swatch:"#b8a05a", emoji:"🌬️",
         beanDesc:"옅은 노란빛의 크고 부푼 생두. 몬순 계절풍에 노출시켜 색과 산을 뺀 독특한 외형.",
@@ -243,7 +243,7 @@ const DATA = {
     ]}
   }},
   america:{ label:"아메리카", center:[6,-72], zoom:3, countries:{
-    colombia:{ name:"콜롬비아", intro:{"생산구조":"안데스 산맥의 소~중형 농장(핀카) 다수. 거의 전량 워시드.", "등급":"Supremo·Excelso (콩 크기 기준).", "대표성격":"캐러멜·붉은과일·감귤, 균형 잡힌 단맛. 가장 무난한 프로파일.", "가격·용도":"중가. 싱글·블렌드 모두 폭넓게. 대중 원두부터 스페셜티까지."}, iso:"COL", center:[4.2,-73.5], zoom:5, regions:[
+    colombia:{ name:"콜롬비아", intro:{"생산구조":"안데스 산맥의 소~중형 농장(핀카) 다수. 거의 전량 워시드.", "등급":"Supremo·Excelso (콩 크기 기준).", "대표성격":"캐러멜·붉은과일·감귤, 균형 잡힌 단맛. 가장 무난한 프로파일.", "가격·용도":"중가. 싱글·블렌드 모두 폭넓게. 대중 원두부터 스페셜티까지."}, iso:"COL", bbox:[[-4.3,-78.99],[12.44,-66.88]], center:[4.2,-73.5], zoom:5, regions:[
       { id:"huila", region:"우일라 · Huila", title:"우일라", coord:[2.3,-75.8],
         coordFlag:"우일라주 근사 중심점", tags:["basic","flavor"], swatch:"#b5643c", emoji:"🍯",
         beanDesc:"균일하고 통통한 생두. 소규모 농장 워시드가 대부분.",
@@ -263,7 +263,7 @@ const DATA = {
         flavor:"초콜릿·캐러멜, 붉은 과일, 둥근 바디. 우일라보다 조금 더 묵직한 단맛.",
         about:"콜롬비아 중서부 산지로, 과거 접근이 어려웠으나 최근 스페셜티 생산지로 빠르게 성장했다." }
     ]},
-    brazil:{ name:"브라질", intro:{"생산구조":"세계 최대 생산국. 평지 대농장 기계 수확이 많음. 내추럴 중심.", "등급":"No.2~ (결점두 수) + 스크린 사이즈 조합.", "대표성격":"초콜릿·견과·저산미·묵직한 바디. 튀지 않고 부드러움.", "가격·용도":"저~중가. 대량 유통·에스프레소/블렌드 베이스의 핵심. 대기업 원두 다수."}, iso:"BRA", center:[-19,-46], zoom:5, regions:[
+    brazil:{ name:"브라질", intro:{"생산구조":"세계 최대 생산국. 평지 대농장 기계 수확이 많음. 내추럴 중심.", "등급":"No.2~ (결점두 수) + 스크린 사이즈 조합.", "대표성격":"초콜릿·견과·저산미·묵직한 바디. 튀지 않고 부드러움.", "가격·용도":"저~중가. 대량 유통·에스프레소/블렌드 베이스의 핵심. 대기업 원두 다수."}, iso:"BRA", bbox:[[-33.77,-73.99],[5.24,-34.73]], center:[-19,-46], zoom:5, regions:[
       { id:"cerrado", region:"미나스 · Cerrado", title:"세하도", coord:[-18.9,-47.5],
         coordFlag:"세하도 미네이루 근사 중심점", tags:["basic","coe","flavor"], swatch:"#7a5230", emoji:"🍫",
         beanDesc:"크고 균일한 생두. 평지 대농장 기계 수확이 많아 상태가 고름.",
@@ -283,7 +283,7 @@ const DATA = {
         flavor:"캐러멜·꿀의 진한 단맛, 초콜릿, 부드러운 산미. 세하도보다 단맛이 조금 더 도드라지는 편.",
         about:"상파울루와 미나스제라이스 경계의 붉은 토양 지대." }
     ]},
-    guatemala:{ name:"과테말라", intro:{"생산구조":"화산 지대의 중~소형 농장. 지역(안티구아 등)별 개성이 뚜렷.", "등급":"SHB (재배 고도 기준, 높을수록 상급).", "대표성격":"초콜릿·스모키·복합적 산미, 벨벳 바디.", "가격·용도":"중~고가. 싱글 오리진 핸드드립·프리미엄 블렌드."}, iso:"GTM", center:[15.5,-90.3], zoom:6, regions:[
+    guatemala:{ name:"과테말라", intro:{"생산구조":"화산 지대의 중~소형 농장. 지역(안티구아 등)별 개성이 뚜렷.", "등급":"SHB (재배 고도 기준, 높을수록 상급).", "대표성격":"초콜릿·스모키·복합적 산미, 벨벳 바디.", "가격·용도":"중~고가. 싱글 오리진 핸드드립·프리미엄 블렌드."}, iso:"GTM", bbox:[[13.74,-92.23],[17.82,-88.23]], center:[15.5,-90.3], zoom:6, regions:[
       { id:"antigua", region:"안티구아 · Antigua", title:"안티구아", coord:[14.56,-90.73],
         coordFlag:"안티구아 밸리 근사 중심점", tags:["basic","flavor"], swatch:"#6b4a2e", emoji:"🌋",
         beanDesc:"화산토 재배 생두. 균일하고 밀도가 높은 편.",
@@ -303,7 +303,7 @@ const DATA = {
         flavor:"초콜릿·견과, 감귤 산미, 균형 잡힌 바디. 안정적이고 부드러운 단맛.",
         about:"아티틀란 호수를 둘러싼 화산 사면 산지. 호수가 만드는 미세기후와 화산토가 균형 잡힌 커피를 만든다." }
     ]},
-    costarica:{ name:"코스타리카", intro:{"생산구조":"소농이 각자 마이크로밀에서 직접 가공. 허니 프로세스 발달. 로부스타 재배 금지(법).", "등급":"SHB (재배 고도 기준).", "대표성격":"꿀·캐러멜의 진한 단맛, 깔끔한 산미. 허니 가공 특유의 시럽감.", "가격·용도":"중~고가. 실험적 가공 로트가 스페셜티 핸드드립으로 인기."}, iso:"CRI", center:[9.9,-84], zoom:7, regions:[
+    costarica:{ name:"코스타리카", intro:{"생산구조":"소농이 각자 마이크로밀에서 직접 가공. 허니 프로세스 발달. 로부스타 재배 금지(법).", "등급":"SHB (재배 고도 기준).", "대표성격":"꿀·캐러멜의 진한 단맛, 깔끔한 산미. 허니 가공 특유의 시럽감.", "가격·용도":"중~고가. 실험적 가공 로트가 스페셜티 핸드드립으로 인기."}, iso:"CRI", bbox:[[8.23,-85.94],[11.22,-82.55]], center:[9.9,-84], zoom:7, regions:[
       { id:"tarrazu", region:"타라수 · Tarrazú", title:"타라수", coord:[9.66,-84.02],
         coordFlag:"타라수 지역 근사 중심점", tags:["basic","coe","flavor"], swatch:"#a0622f", emoji:"🍯",
         beanDesc:"고지대 재배로 밀도 높고 균일한 생두. 허니 프로세스로 유명.",
@@ -323,7 +323,7 @@ const DATA = {
         flavor:"감귤·사과 산미, 초콜릿 단맛, 깔끔하고 균형 잡힌 바디. '코스타리카의 보르도'로 불림.",
         about:"이라수 화산 기슭의 오래된 산지. 도시 확장으로 재배지가 줄었지만 균형 잡힌 클래식 커피로 이름났다." }
     ]},
-    elsalvador:{ name:"엘살바도르", intro:{"생산구조":"화산 지대 중심. 부르봉 전통이 강하고 파카마라 품종의 본고장.", "등급":"SHG (재배 고도 기준).", "대표성격":"캐러멜·초콜릿·부드러운 단맛. 파카마라·게이샤는 화사함.", "가격·용도":"중~고가. 부드러운 싱글 오리진, 게이샤 로트는 고가 스페셜티."}, iso:"SLV", center:[13.8,-88.9], zoom:8, regions:[
+    elsalvador:{ name:"엘살바도르", intro:{"생산구조":"화산 지대 중심. 부르봉 전통이 강하고 파카마라 품종의 본고장.", "등급":"SHG (재배 고도 기준).", "대표성격":"캐러멜·초콜릿·부드러운 단맛. 파카마라·게이샤는 화사함.", "가격·용도":"중~고가. 부드러운 싱글 오리진, 게이샤 로트는 고가 스페셜티."}, iso:"SLV", bbox:[[13.15,-90.1],[14.42,-87.72]], center:[13.8,-88.9], zoom:8, regions:[
       { id:"apaneca", region:"아파네카-이야마테펙", title:"아파네카", coord:[13.85,-89.79],
         coordFlag:"아파네카 산맥 근사 중심점", tags:["basic","coe","flavor"], swatch:"#a0622f", emoji:"🍮",
         beanDesc:"부르봉 계열 중심 생두. 부드럽고 균일한 편.",
@@ -337,7 +337,7 @@ const DATA = {
         flavor:"흑설탕·초콜릿, 오렌지 산미, 둥근 바디. 안정적이고 달콤한 클래식 프로파일.",
         about:"엘살바도르 최고봉 산타아나(이야마테펙) 화산 사면 산지. 미네랄 풍부한 화산토에서 균형 잡힌 커피가 난다." }
     ]},
-    mexico:{ name:"멕시코", intro:{"생산구조":"남부(치아파스·오아하카) 소농 유기농 협동조합 중심.", "등급":"고도 기준 (알투라 등).", "대표성격":"초콜릿·견과·순한 산미. 마일드하고 유기농 로트가 많음.", "가격·용도":"저~중가. 유기농·디카페인·블렌드 베이스로 폭넓게."}, iso:"MEX", center:[19,-99], zoom:4.4, regions:[
+    mexico:{ name:"멕시코", intro:{"생산구조":"남부(치아파스·오아하카) 소농 유기농 협동조합 중심.", "등급":"고도 기준 (알투라 등).", "대표성격":"초콜릿·견과·순한 산미. 마일드하고 유기농 로트가 많음.", "가격·용도":"저~중가. 유기농·디카페인·블렌드 베이스로 폭넓게."}, iso:"MEX", bbox:[[14.54,-117.13],[32.72,-86.81]], center:[19,-99], zoom:4.4, regions:[
       { id:"chiapas", region:"치아파스 · Chiapas", title:"치아파스", coord:[15.5,-92.3],
         coordFlag:"치아파스주 근사 중심점", tags:["basic","coe","flavor"], swatch:"#6b4a2e", emoji:"🍫",
         beanDesc:"과테말라 접경 남부 산지. 유기농 소농 협동조합 생두가 많음.",
@@ -359,7 +359,7 @@ const DATA = {
     ]}
   }},
   etc:{ label:"기타", center:[15,-60], zoom:2.4, countries:{
-    hawaii:{ name:"하와이", intro:{"생산구조":"미국 영토. 빅아일랜드의 좁은 벨트에서 소량 생산. 인건비 높음.", "등급":"코나는 Extra Fancy·Fancy 등 자체 등급.", "대표성격":"부드러운 산미·꿀 단맛·매끄러운 바디. 자극이 거의 없음.", "가격·용도":"매우 고가. 희소 스페셜티. '세계 3대 커피'로 불리는 통칭(공식 아님)."}, iso:"HAW", center:[19.6,-155.5], zoom:8, noBorder:true, regions:[
+    hawaii:{ name:"하와이", intro:{"생산구조":"미국 영토. 빅아일랜드의 좁은 벨트에서 소량 생산. 인건비 높음.", "등급":"코나는 Extra Fancy·Fancy 등 자체 등급.", "대표성격":"부드러운 산미·꿀 단맛·매끄러운 바디. 자극이 거의 없음.", "가격·용도":"매우 고가. 희소 스페셜티. '세계 3대 커피'로 불리는 통칭(공식 아님)."}, iso:"HAW", bbox:[[18.9,-156.1],[20.3,-154.75]], center:[19.6,-155.5], zoom:8, noBorder:true, regions:[
       { id:"kona", region:"빅아일랜드 · Kona", title:"코나", coord:[19.62,-155.93],
         tags:["basic","flavor"], swatch:"#7a5230", emoji:"🌺",
         beanDesc:"통통하고 균일한 생두. 엄격한 등급 관리(Extra Fancy 등)로 외형이 고름.",
@@ -373,7 +373,7 @@ const DATA = {
         flavor:"캐러멜·열대과일, 부드러운 산미, 매끄러운 바디. 코나와 결이 비슷하나 과일감이 조금 더 있음.",
         about:"빅아일랜드 남부 화산 사면 산지. 사탕수수 산업 쇠퇴 후 커피로 전환해 국제 대회 수상으로 이름을 알렸다." }
     ]},
-    yemen:{ name:"예멘", intro:{"생산구조":"고산 계단식 밭의 소농. 물 부족으로 건식 가공. 세계 커피 교역의 발상지.", "등급":"통일된 공식 등급 체계가 약함. 지역명으로 유통.", "대표성격":"와인·건포도·향신료, 야성적이고 복합적. 묵직한 바디.", "가격·용도":"고가. 희소 스페셜티. '모카'라는 이름의 유래지."}, iso:"YEM", center:[15.5,45.5], zoom:6, regions:[
+    yemen:{ name:"예멘", intro:{"생산구조":"고산 계단식 밭의 소농. 물 부족으로 건식 가공. 세계 커피 교역의 발상지.", "등급":"통일된 공식 등급 체계가 약함. 지역명으로 유통.", "대표성격":"와인·건포도·향신료, 야성적이고 복합적. 묵직한 바디.", "가격·용도":"고가. 희소 스페셜티. '모카'라는 이름의 유래지."}, iso:"YEM", bbox:[[12.59,42.6],[19.0,53.11]], center:[15.5,45.5], zoom:6, regions:[
       { id:"mokha", region:"홍해 연안 · Mokha", title:"모카", coord:[13.32,43.25],
         coordFlag:"모카 항 지역 근사 중심점", tags:["basic","flavor"], swatch:"#6b3b2e", emoji:"🍫",
         beanDesc:"작고 불규칙한 생두. 오래된 재래 품종과 건식 가공으로 외형이 거칠다.",
@@ -387,7 +387,7 @@ const DATA = {
         flavor:"베리·건과일, 향신료, 진한 단맛과 무거운 바디. 지역마다 편차가 크고 개성이 강하다.",
         about:"사나 서쪽 하라즈 산악지대. 수백 년 된 계단식 밭에서 전통 방식으로 재배·건조하는 예멘 대표 산지다." }
     ]},
-    jamaica:{ name:"자메이카", intro:{"생산구조":"블루마운틴 지정 구역에서만 그 이름 사용. 엄격한 인증·통(barrel) 포장.", "등급":"블루마운틴 No.1 등 (구역·크기 기준).", "대표성격":"부드럽고 깔끔한 산미, 견과·초콜릿. 자극 없는 매끈한 균형.", "가격·용도":"매우 고가. 대부분 일본 수출. '세계 3대 커피' 통칭(공식 아님)."}, iso:"JAM", center:[18.1,-77.3], zoom:8, regions:[
+    jamaica:{ name:"자메이카", intro:{"생산구조":"블루마운틴 지정 구역에서만 그 이름 사용. 엄격한 인증·통(barrel) 포장.", "등급":"블루마운틴 No.1 등 (구역·크기 기준).", "대표성격":"부드럽고 깔끔한 산미, 견과·초콜릿. 자극 없는 매끈한 균형.", "가격·용도":"매우 고가. 대부분 일본 수출. '세계 3대 커피' 통칭(공식 아님)."}, iso:"JAM", bbox:[[17.7,-78.34],[18.52,-76.2]], center:[18.1,-77.3], zoom:8, regions:[
       { id:"bluemountain", region:"블루마운틴 · Blue Mountain", title:"블루마운틴", coord:[18.05,-76.65],
         coordFlag:"블루마운틴 산맥 근사 중심점", tags:["basic","flavor"], swatch:"#3b5b6b", emoji:"🏔️",
         beanDesc:"크고 균일한 생두. 엄격한 인증·통(barrel) 포장으로 유명.",
@@ -395,7 +395,7 @@ const DATA = {
         flavor:"부드럽고 깔끔한 산미, 견과·초콜릿, 은은한 단맛. 자극이 거의 없는 매끈한 균형이 특징.",
         about:"자메이카 동부 블루마운틴 산맥의 지정 구역에서만 이 이름을 쓸 수 있다. 서늘한 안개와 느린 성숙이 부드러운 컵을 만든다. '세계 3대 커피'로 꼽히지만 공식 등급이 아니라 희소성·역사에 기반한 통칭이며, 대부분이 일본으로 수출되는 것으로 알려져 있다." }
     ]},
-    png:{ name:"파푸아뉴기니", intro:{"생산구조":"고원지대 소농 '가든 커피'와 일부 대농원 혼재. 20세기 블루마운틴 종자 도입.", "등급":"AA·A 등 (크기 기준).", "대표성격":"열대과일·초콜릿·와이니, 인도네시아보다 밝은 산미.", "가격·용도":"중가. 싱글 오리진·블렌드. 개성 있는 스페셜티 로트도 있음."}, iso:"PNG", center:[-6.3,144.5], zoom:6, regions:[
+    png:{ name:"파푸아뉴기니", intro:{"생산구조":"고원지대 소농 '가든 커피'와 일부 대농원 혼재. 20세기 블루마운틴 종자 도입.", "등급":"AA·A 등 (크기 기준).", "대표성격":"열대과일·초콜릿·와이니, 인도네시아보다 밝은 산미.", "가격·용도":"중가. 싱글 오리진·블렌드. 개성 있는 스페셜티 로트도 있음."}, iso:"PNG", bbox:[[-10.65,141.0],[-2.5,156.02]], center:[-6.3,144.5], zoom:6, regions:[
       { id:"wahgi", region:"서부 고원 · Wahgi Valley", title:"와기밸리", coord:[-5.85,144.25],
         coordFlag:"와기밸리·마운트하겐 근사 중심점", tags:["basic","flavor"], swatch:"#5c4a2e", emoji:"⛰️",
         beanDesc:"고지대 워시드 생두. 티피카·부르봉 계열로 인도네시아보다 밝은 편.",
@@ -508,7 +508,7 @@ function renderCountries(){
 // 나라 선택: 국경 + 산지 마커 + 도시칩
 function selectCountry(k){
   viewGen++; focusToken++;
-  const gen=viewGen, ft=focusToken;
+  const gen=viewGen;
   currentCountry=k;
   currentBrand=null;
   const c=DATA[currentCont].countries[k];
@@ -528,34 +528,21 @@ function selectCountry(k){
     pts.push(r.coord);
   });
 
-  const mapH=document.getElementById('map').clientHeight;
-  // 하단 시트(42dvh)에 가리지 않도록 아래쪽 패딩
   const fitOpts={animate:true, paddingTopLeft:[18,18], paddingBottomRight:[18, sheetPad()]};
-  function fitToMarkers(){
-    if(pts.length>=2){
-      map.fitBounds(L.latLngBounds(pts).pad(0.4), Object.assign({maxZoom:7}, fitOpts));
-    }else{
-      const z=Math.min(c.zoom,7);
-      const px=map.project(pts[0]||c.center, z);
-      const nc=map.unproject(px.add([0, mapH*0.20]), z);
-      map.setView(nc, z, {animate:true});
-    }
+  // 저장된 경계 상자(bbox)로 즉시 '나라 전체'를 화면에 맞춤 (네트워크 대기 없음)
+  if(c.bbox){
+    map.fitBounds(L.latLngBounds(c.bbox).pad(0.04), fitOpts);
+  }else if(pts.length>=2){
+    map.fitBounds(L.latLngBounds(pts).pad(0.4), Object.assign({maxZoom:7}, fitOpts));
+  }else if(pts.length===1){
+    const z=Math.min(c.zoom,7);
+    const mapH=document.getElementById('map').clientHeight;
+    const px=map.project(pts[0], z);
+    const nc=map.unproject(px.add([0, mapH*0.20]), z);
+    map.setView(nc, z, {animate:true});
   }
-
-  if(c.iso && !c.noBorder){
-    // 국경을 먼저 불러와 '나라 전체'가 화면에 들어오게 맞춤
-    loadBorder(c.iso,'#a9744f',2.5,gen).then(layer=>{
-      if(gen!==viewGen) return;   // 그 사이 다른 대륙/나라로 이동함
-      if(ft!==focusToken) return; // 그 사이 마커를 눌러 카메라가 이미 이동함
-      if(layer && layer.getBounds && layer.getBounds().isValid()){
-        map.fitBounds(layer.getBounds().pad(0.05), fitOpts);
-      }else{
-        fitToMarkers();            // 국경 로딩 실패 시 마커 기준으로
-      }
-    });
-  }else{
-    fitToMarkers();
-  }
+  // 국경 점선은 별도로 로드 (카메라는 기다리지 않음)
+  if(c.iso && !c.noBorder) loadBorder(c.iso,'#a9744f',2.5,gen);
   // 나라 소개 시트 표시
   openCountrySheet(c);
 }
@@ -609,7 +596,15 @@ const sheet=document.getElementById('sheet');
 const sheetIn=document.getElementById('sheetIn');
 const sheetScroll=document.getElementById('sheetScroll');
 const sheetNav=document.getElementById('sheetNav');
-function closeSheet(){ sheet.classList.remove('open'); clearHighlight(); document.querySelectorAll('.city').forEach(el=>el.classList.remove('active')); }
+function closeSheet(refit){ sheet.classList.remove('open'); clearHighlight(); document.querySelectorAll('.city').forEach(el=>el.classList.remove('active'));
+  if(refit) refitCountryFull();
+}
+// 시트를 닫으면 나라를 지도 전체 영역에 크게 다시 맞춤
+function refitCountryFull(){
+  if(!currentCountry) return;
+  const cc=DATA[currentCont]&&DATA[currentCont].countries&&DATA[currentCont].countries[currentCountry];
+  if(cc&&cc.bbox){ focusToken++; map.fitBounds(L.latLngBounds(cc.bbox).pad(0.04), {animate:true, padding:[24,24]}); }
+}
 
 function openSheetByRegion(r){
   currentIndex=currentRegions.findIndex(x=>x.id===r.id);
@@ -787,7 +782,7 @@ sheetScroll.addEventListener('touchend',function(e){
   const dy=e.changedTouches[0].clientY - sy;
   if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.5){ goRegion(dx<0?1:-1); }
 });
-document.getElementById('sheetClose').addEventListener('click',closeSheet);
+document.getElementById('sheetClose').addEventListener('click',()=>closeSheet(true));
 
 document.getElementById('tabs').addEventListener('click',function(e){
   const t=e.target.closest('.tab'); if(!t) return;
@@ -837,7 +832,7 @@ function runSearch(raw){
     }
   }
 }
-map.on('click',function(){ closeSheet(); });
+map.on('click',function(){ closeSheet(true); });
 
 // 초기: 첫 화면엔 4개 대륙만. 아무 대륙도 선택 안 함(빈 지도).
 map.setView([20,10],2);
