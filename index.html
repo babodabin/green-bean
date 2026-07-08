@@ -30,9 +30,9 @@
   .brand span{font-size:14px; color:var(--sub); font-weight:500;}
 
   .tabs{display:flex; gap:7px; padding:0 0 10px;}
-  .tab{flex:1; padding:12px 0; text-align:center; border:1px solid var(--line);
+  .tab{flex:1; padding:11px 0; text-align:center; border:1px solid var(--line);
     border-radius:14px; background:var(--panel); color:var(--sub);
-    font-size:14px; font-weight:600; cursor:pointer; transition:.15s;}
+    font-size:13px; font-weight:600; cursor:pointer; transition:.15s; white-space:nowrap;}
   .tab.active{background:var(--accent); color:#fff; border-color:var(--accent);}
 
   .row{display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; transition:.2s;}
@@ -110,6 +110,10 @@
   .faded{opacity:.25 !important;}
   .clabel{background:transparent; color:var(--sub); font-size:12px; font-weight:800;
     text-shadow:0 0 3px #f6efe6,0 0 3px #f6efe6,0 0 3px #f6efe6; white-space:nowrap;}
+  .pin-dot.brand{background:var(--green);}
+  .origin-list{display:flex; flex-wrap:wrap; gap:7px; margin:2px 0 14px;}
+  .origin-chip{padding:8px 13px; border:1px solid var(--line); border-radius:18px;
+    background:var(--bg); color:var(--accent); font-size:13px; font-weight:700; cursor:pointer;}
 </style>
 </head>
 <body>
@@ -121,6 +125,7 @@
       <div class="tab" data-cont="asia">아시아</div>
       <div class="tab" data-cont="america">아메리카</div>
       <div class="tab" data-cont="etc">기타</div>
+      <div class="tab" data-cont="brand">브랜드</div>
     </div>
     <div class="row countries hidden" id="countries"></div>
     <div class="row cities hidden" id="cities"></div>
@@ -407,7 +412,7 @@ const DATA = {
   }}
 };
 
-const map = L.map('map',{zoomControl:true, attributionControl:true});
+const map = L.map('map',{zoomControl:true, attributionControl:true, zoomSnap:0.25});
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',{
   maxZoom:18, attribution:'&copy; OpenStreetMap &copy; CARTO'
 }).addTo(map);
@@ -419,20 +424,24 @@ let currentCont=null;
 let currentCountry=null;
 let currentRegions=[];
 let currentIndex=0;
+let currentBrand=null;
+let viewGen=0;    // 대륙/나라 전환 세대: 늦게 도착한 국경 응답 무시용
+let focusToken=0; // 카메라 이동 예약 토큰: 마커 이동이 국경 맞춤보다 우선
 
 function clearMarkers(){ Object.values(markers).forEach(o=>{map.removeLayer(o.pin); map.removeLayer(o.label);}); markers={}; }
 function clearBorders(){ borderLayers.forEach(l=>map.removeLayer(l)); borderLayers=[]; }
 function clearCountryLabels(){ countryLabels.forEach(l=>map.removeLayer(l)); countryLabels=[]; }
-function pinIcon(isCoe){ return L.divIcon({className:'', iconSize:[16,16], iconAnchor:[8,16],
-  html:'<div class="pin-dot '+(isCoe?'coe':'')+'"></div>'}); }
+function pinIcon(cls){ return L.divIcon({className:'', iconSize:[16,16], iconAnchor:[8,16],
+  html:'<div class="pin-dot '+(cls||'')+'"></div>'}); }
 function labelIcon(text){ return L.divIcon({className:'', iconSize:[0,0], iconAnchor:[-12,8],
   html:'<div class="pin-label">'+text+'</div>'}); }
 function countryNameIcon(text){ return L.divIcon({className:'', iconSize:[0,0], iconAnchor:[0,0],
   html:'<div class="clabel">'+text+'</div>'}); }
 
-function loadBorder(iso, styleColor, weight){
+function loadBorder(iso, styleColor, weight, gen){
   const url='https://raw.githubusercontent.com/johan/world.geo.json/master/countries/'+iso+'.geo.json';
   return fetch(url).then(r=>r.json()).then(gj=>{
+    if(gen!==viewGen) return null; // 늦게 도착한 응답: 이미 다른 화면이면 그리지 않음
     const layer=L.geoJSON(gj,{style:{color:styleColor,weight:weight,fill:false,dashArray:'1,6'}}).addTo(map);
     borderLayers.push(layer);
     return layer;
@@ -441,8 +450,11 @@ function loadBorder(iso, styleColor, weight){
 
 // 대륙 선택: 나라 칩만 노출
 function selectContinent(cont){
+  viewGen++; focusToken++;
+  const gen=viewGen;
   currentCont=cont;
   currentCountry=null;
+  currentBrand=null;
   currentRegions=[];
   document.getElementById('countries').classList.remove('hidden');
   document.getElementById('cities').classList.add('hidden');
@@ -452,15 +464,22 @@ function selectContinent(cont){
 
   const c=DATA[cont];
   const countries=c.countries;
+  const centers=[];
   Object.values(countries).forEach(country=>{
     if(country.iso && !country.noBorder){
-      loadBorder(country.iso,'#a9744f',2);
+      loadBorder(country.iso,'#a9744f',2,gen);
     }
     // 나라 이름 라벨(대륙 뷰)
     const lbl=L.marker(country.center,{icon:countryNameIcon(country.name), interactive:false}).addTo(map);
     countryLabels.push(lbl);
+    centers.push(country.center);
   });
-  map.setView(c.center,c.zoom,{animate:true});
+  // 대륙의 모든 나라가 한 화면에 들어오게 (기타 탭처럼 흩어진 경우 자동 줌아웃)
+  if(centers.length>=2){
+    map.fitBounds(L.latLngBounds(centers), {animate:true, padding:[26,26], maxZoom:c.zoom});
+  }else{
+    map.setView(c.center,c.zoom,{animate:true});
+  }
 }
 
 function renderCountries(){
@@ -478,7 +497,10 @@ function renderCountries(){
 
 // 나라 선택: 국경 + 산지 마커 + 도시칩
 function selectCountry(k){
+  viewGen++; focusToken++;
+  const gen=viewGen, ft=focusToken;
   currentCountry=k;
+  currentBrand=null;
   const c=DATA[currentCont].countries[k];
   currentRegions=c.regions;
   document.getElementById('countries').classList.remove('hidden');
@@ -487,27 +509,42 @@ function selectCountry(k){
   renderCountries();
   renderCities();
 
-  if(c.iso && !c.noBorder) loadBorder(c.iso,'#a9744f',2.5);
   const pts=[];
   c.regions.forEach(r=>{
-    const pin=L.marker(r.coord,{icon:pinIcon(r.tags.includes('coe'))}).addTo(map);
+    const pin=L.marker(r.coord,{icon:pinIcon(r.tags.includes('coe')?'coe':'')}).addTo(map);
     const label=L.marker(r.coord,{icon:labelIcon(r.title), interactive:false}).addTo(map);
     pin.on('click',()=>openSheetByRegion(r));
     markers[r.id]={pin,label};
     pts.push(r.coord);
   });
-  if(pts.length>=2){
-    // 마커들을 담되 넉넉한 여백 + 하단 시트(42dvh)를 피하는 패딩
-    const b=L.latLngBounds(pts).pad(0.5);
-    const mapH=document.getElementById('map').clientHeight;
-    map.fitBounds(b, {animate:true, maxZoom:7, paddingBottomRight:[0, mapH*0.42]});
+
+  const mapH=document.getElementById('map').clientHeight;
+  // 하단 시트(42dvh)에 가리지 않도록 아래쪽 패딩
+  const fitOpts={animate:true, paddingTopLeft:[16,16], paddingBottomRight:[16, mapH*0.42]};
+  function fitToMarkers(){
+    if(pts.length>=2){
+      map.fitBounds(L.latLngBounds(pts).pad(0.4), Object.assign({maxZoom:7}, fitOpts));
+    }else{
+      const z=Math.min(c.zoom,7);
+      const px=map.project(pts[0]||c.center, z);
+      const nc=map.unproject(px.add([0, mapH*0.20]), z);
+      map.setView(nc, z, {animate:true});
+    }
+  }
+
+  if(c.iso && !c.noBorder){
+    // 국경을 먼저 불러와 '나라 전체'가 화면에 들어오게 맞춤
+    loadBorder(c.iso,'#a9744f',2.5,gen).then(layer=>{
+      if(gen!==viewGen) return;   // 그 사이 다른 대륙/나라로 이동함
+      if(ft!==focusToken) return; // 그 사이 마커를 눌러 카메라가 이미 이동함
+      if(layer && layer.getBounds && layer.getBounds().isValid()){
+        map.fitBounds(layer.getBounds(), fitOpts);
+      }else{
+        fitToMarkers();            // 국경 로딩 실패 시 마커 기준으로
+      }
+    });
   }else{
-    // 산지 1곳: 그 지점 기준 적당한 줌 + 위로 올려 시트 피함
-    const z=Math.min(c.zoom,7);
-    const px=map.project(pts[0]||c.center, z);
-    const mapH=document.getElementById('map').clientHeight;
-    const nc=map.unproject(px.add([0, mapH*0.20]), z);
-    map.setView(nc, z, {animate:true});
+    fitToMarkers();
   }
   // 나라 소개 시트 표시
   openCountrySheet(c);
@@ -598,8 +635,8 @@ function paintSheet(){
   highlight(r.id);
   document.querySelectorAll('.city').forEach(el=>el.classList.toggle('active',el.dataset.r===r.id));
   // 마커를 정확한 좌표에 두되, 시트에 안 가리도록 지도 가시영역 상단 30% 지점에 배치
-  const cc=DATA[currentCont].countries[currentCountry];
-  const z=cc?cc.zoom:map.getZoom();
+  focusToken++;            // 예약된 국경 카메라 이동보다 이 이동이 우선
+  const z=map.getZoom();    // 사용자가 보던 줌 유지 (강제 리셋 방지)
   const mapH=document.getElementById('map').clientHeight;
   // 목표: 마커가 지도 세로 30% 위치에 오게 → 지도 중심을 마커보다 (20% 높이)만큼 아래로
   const targetPx=map.project(r.coord, z);            // 마커의 픽셀 좌표
@@ -614,6 +651,122 @@ function goRegion(dir){
   currentIndex=(currentIndex+dir+currentRegions.length)%currentRegions.length;
   paintSheet();
 }
+
+
+// ===== 프랜차이즈 브랜드 =====
+// 산지·가격은 2026년 기준 공개 자료(공식 사이트·원산지 표기·보도)로 확인한 내용만 수록.
+const BRANDS={
+  starbucks:{ name:"스타벅스",
+    facts:{"아메리카노":"Tall 4,700원","원두":"100% 아라비카","로스팅":"블론드·미디엄·다크","구매 산지":"약 30개국"},
+    taste:"다크 로스팅 중심의 묵직하고 스모키한 프로파일이 기본. 산미는 낮은 편이며, 블론드 로스트를 고르면 더 가볍고 산뜻한 컵도 가능하다.",
+    beans:"라틴아메리카·아프리카·아시아태평양 3개 권역, 약 30개국에서 고지대 아라비카만 구매한다. 라틴아메리카(콜롬비아·브라질·과테말라·코스타리카·멕시코)가 블렌드의 축이고, 에티오피아·케냐·수마트라는 싱글 오리진과 블렌드의 개성용으로 쓰인다.",
+    note:"📍 실제 구매국은 30개국 이상이며, 지도에는 이 앱에 수록된 대표 산지만 표시했다. 가격은 2026년 톨 사이즈 기준.",
+    origins:[
+      {label:"콜롬비아",cont:"america",country:"colombia"},
+      {label:"브라질",cont:"america",country:"brazil"},
+      {label:"과테말라",cont:"america",country:"guatemala"},
+      {label:"코스타리카",cont:"america",country:"costarica"},
+      {label:"멕시코",cont:"america",country:"mexico"},
+      {label:"에티오피아",cont:"africa",country:"ethiopia"},
+      {label:"케냐",cont:"africa",country:"kenya"},
+      {label:"수마트라",cont:"asia",country:"indonesia"}
+    ]},
+  mega:{ name:"메가MGC커피",
+    facts:{"아메리카노":"HOT 1,700 / ICE 2,000원","원두":"100% 아라비카","성격":"다크·고소·대용량","산지 표기":"브라질·콜롬비아·에티오피아"},
+    taste:"산미를 누른 고소하고 묵직한 다크 로스팅. 대용량(ICE 720ml)으로 진하게 내려 얼음과 함께 마시는 스타일에 맞춰져 있다.",
+    beans:"매장 원산지 표기 기준으로 커피 원두는 브라질·콜롬비아·에티오피아산 블렌드다. 콜드브루는 케냐산, 디카페인 콜드브루는 콜롬비아산을 쓴다.",
+    note:"📍 가격·원산지 표기는 2026년 기준이며 블렌드 구성은 작황에 따라 바뀔 수 있다.",
+    origins:[
+      {label:"브라질",cont:"america",country:"brazil"},
+      {label:"콜롬비아",cont:"america",country:"colombia"},
+      {label:"에티오피아",cont:"africa",country:"ethiopia"},
+      {label:"케냐 (콜드브루)",cont:"africa",country:"kenya"}
+    ]},
+  ediya:{ name:"이디야커피",
+    facts:{"아메리카노":"3,200원 (라지 기본)","원두":"이디야 블렌드","로스팅":"평택 드림팩토리 자체","산지":"5개국 6개 품종"},
+    taste:"다크초콜릿·카라멜·견과의 고소함과 부드러운 바디를 지향하는 균형형 블렌드. 강한 개성보다 무난하고 안정적인 컵.",
+    beans:"창립 20주년에 리뉴얼한 '이디야 블렌드'는 콜롬비아·과테말라·에티오피아·브라질·케냐 5개 산지 6개 품종을 혼합한다. 생두를 직수입해 평택 드림팩토리에서 전량 자체 로스팅하는 것이 특징이다.",
+    note:"📍 아메리카노 가격은 2018년 이후 동결(2026년 기준). 2025년부터 기본 제공 사이즈가 라지로 변경됐다.",
+    origins:[
+      {label:"콜롬비아",cont:"america",country:"colombia"},
+      {label:"과테말라",cont:"america",country:"guatemala"},
+      {label:"에티오피아",cont:"africa",country:"ethiopia"},
+      {label:"브라질",cont:"america",country:"brazil"},
+      {label:"케냐",cont:"africa",country:"kenya"}
+    ]}
+};
+
+// 브랜드 탭: 브랜드 칩만 노출
+function selectBrandTab(){
+  viewGen++; focusToken++;
+  currentCont='brand'; currentCountry=null; currentBrand=null; currentRegions=[];
+  document.getElementById('countries').classList.remove('hidden');
+  document.getElementById('cities').classList.add('hidden');
+  document.getElementById('cities').innerHTML='';
+  clearMarkers(); clearBorders(); clearCountryLabels(); closeSheet();
+  renderBrandChips();
+  map.setView([15,15],1.5,{animate:true});
+}
+function renderBrandChips(){
+  const box=document.getElementById('countries');
+  box.innerHTML=Object.keys(BRANDS).map(k=>{
+    const on=(k===currentBrand)?'active':'';
+    return '<div class="country '+on+'" data-b="'+k+'">'+BRANDS[k].name+'</div>';
+  }).join('');
+}
+// 브랜드 선택: 사용하는 산지 나라들에 핀 표시 + 브랜드 시트
+function selectBrand(k){
+  viewGen++; focusToken++;
+  currentBrand=k; currentCountry=null; currentRegions=[];
+  clearMarkers(); clearBorders(); clearCountryLabels();
+  renderBrandChips();
+  const b=BRANDS[k];
+  const pts=[];
+  b.origins.forEach(o=>{
+    const c=DATA[o.cont] && DATA[o.cont].countries[o.country];
+    if(!c) return;
+    const pin=L.marker(c.center,{icon:pinIcon('brand')}).addTo(map);
+    const label=L.marker(c.center,{icon:labelIcon(o.label), interactive:false}).addTo(map);
+    pin.on('click',()=>jumpToCountry(o.cont,o.country));
+    markers['brand-'+o.country]={pin,label};
+    pts.push(c.center);
+  });
+  if(pts.length){
+    const mapH=document.getElementById('map').clientHeight;
+    map.fitBounds(L.latLngBounds(pts), {animate:true, paddingTopLeft:[30,30], paddingBottomRight:[30, mapH*0.42]});
+  }
+  openBrandSheet(b);
+}
+function openBrandSheet(b){
+  const facts=Object.entries(b.facts).map(([k,v])=>
+    '<div class="fact"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>').join('');
+  const chips=b.origins.map(o=>
+    '<div class="origin-chip" data-cont="'+o.cont+'" data-c="'+o.country+'">'+o.label+'</div>').join('');
+  sheetIn.innerHTML=
+    '<div class="sheet-region">프랜차이즈</div>'+
+    '<div class="sheet-title">'+b.name+'</div>'+
+    '<div class="sheet-badges"><span class="badge fr">프랜차이즈</span><span class="badge basic">산지 '+b.origins.length+'곳</span></div>'+
+    '<div class="facts">'+facts+'</div>'+
+    '<p class="section-h">맛 · 성격</p><p class="body-t">'+b.taste+'</p>'+
+    '<p class="section-h">원두 · 산지</p><p class="body-t">'+b.beans+'</p>'+
+    '<div class="origin-list">'+chips+'</div>'+
+    (b.note?'<div class="note">'+b.note+'</div>':'')+
+    '<p class="swipe-hint" style="margin-top:8px">산지 칩이나 지도 마커를 누르면 해당 나라로 이동</p>';
+  sheetNav.innerHTML='';
+  sheetScroll.scrollTop=0;
+  sheet.classList.add('open');
+}
+// 브랜드 산지 → 해당 나라 화면으로 점프
+function jumpToCountry(cont,ck){
+  currentBrand=null;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.cont===cont));
+  currentCont=cont;
+  selectCountry(ck);
+}
+sheetIn.addEventListener('click',function(e){
+  const oc=e.target.closest('.origin-chip'); if(!oc) return;
+  jumpToCountry(oc.dataset.cont, oc.dataset.c);
+});
 
 let sx=0, sy=0, swiping=false;
 sheetScroll.addEventListener('touchstart',function(e){
@@ -631,10 +784,12 @@ document.getElementById('tabs').addEventListener('click',function(e){
   const t=e.target.closest('.tab'); if(!t) return;
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   t.classList.add('active');
-  selectContinent(t.dataset.cont);
+  if(t.dataset.cont==='brand'){ selectBrandTab(); }
+  else{ selectContinent(t.dataset.cont); }
 });
 document.getElementById('countries').addEventListener('click',function(e){
   const c=e.target.closest('.country'); if(!c||c.classList.contains('empty')) return;
+  if(c.dataset.b){ selectBrand(c.dataset.b); return; }
   selectCountry(c.dataset.c);
 });
 document.getElementById('cities').addEventListener('click',function(e){
@@ -642,25 +797,37 @@ document.getElementById('cities').addEventListener('click',function(e){
   const r=currentRegions.find(x=>x.id===c.dataset.r); if(!r) return;
   openSheetByRegion(r);
 });
+let searchTimer=null;
 document.getElementById('search').addEventListener('input',function(e){
-  const q=e.target.value.trim().toLowerCase(); if(!q) return;
+  clearTimeout(searchTimer);
+  // 타이핑이 멈춘 뒤에만 검색 (글자마다 지도가 튀는 것 방지)
+  searchTimer=setTimeout(()=>runSearch(e.target.value),400);
+});
+function runSearch(raw){
+  const q=raw.trim().toLowerCase(); if(!q) return;
+  // 1) 산지(지역) 이름 매칭
   for(const contKey in DATA){
     const cont=DATA[contKey];
     for(const ck in cont.countries){
       const country=cont.countries[ck];
       for(const r of country.regions){
         if(r.title.toLowerCase().includes(q)||r.region.toLowerCase().includes(q)){
-          if(currentCont!==contKey){
-            document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.cont===contKey));
-            currentCont=contKey;
-          }
-          selectCountry(ck);
+          jumpToCountry(contKey,ck);
           setTimeout(()=>openSheetByRegion(r),350); return;
         }
       }
     }
   }
-});
+  // 2) 나라 이름 매칭 (예: "케냐")
+  for(const contKey in DATA){
+    const cont=DATA[contKey];
+    for(const ck in cont.countries){
+      if(cont.countries[ck].name.toLowerCase().includes(q)){
+        jumpToCountry(contKey,ck); return;
+      }
+    }
+  }
+}
 map.on('click',function(){ closeSheet(); });
 
 // 초기: 첫 화면엔 4개 대륙만. 아무 대륙도 선택 안 함(빈 지도).
