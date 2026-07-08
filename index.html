@@ -119,7 +119,7 @@
 <body>
 <div id="app">
   <header>
-    <div class="brand"><h1>커피산지</h1><span>Coffee Origins · v4</span></div>
+    <div class="brand"><h1>커피산지</h1><span>Coffee Origins · v5</span></div>
     <div class="tabs" id="tabs">
       <div class="tab" data-cont="africa">아프리카</div>
       <div class="tab" data-cont="asia">아시아</div>
@@ -528,7 +528,7 @@ function selectCountry(k){
     pts.push(r.coord);
   });
 
-  const fitOpts={animate:true, paddingTopLeft:[18,18], paddingBottomRight:[18, sheetPad()]};
+  const fitOpts={animate:true, paddingTopLeft:[18,10], paddingBottomRight:[18, sheetPad()+26]};
   // 저장된 경계 상자(bbox)로 즉시 '나라 전체'를 화면에 맞춤 (네트워크 대기 없음)
   if(c.bbox){
     map.fitBounds(L.latLngBounds(c.bbox).pad(0.04), fitOpts);
@@ -737,7 +737,7 @@ function selectBrand(k){
     pts.push(c.center);
   });
   if(pts.length){
-    map.fitBounds(L.latLngBounds(pts), {animate:true, paddingTopLeft:[30,30], paddingBottomRight:[30, sheetPad()]});
+    map.fitBounds(L.latLngBounds(pts), {animate:true, paddingTopLeft:[30,16], paddingBottomRight:[30, sheetPad()+26]});
   }
   openBrandSheet(b);
 }
