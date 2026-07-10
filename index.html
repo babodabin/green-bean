@@ -160,7 +160,7 @@
 
   .fld{margin-bottom:14px;}
   .fld label{display:block; font-size:12px; font-weight:700; color:var(--sub); margin-bottom:5px;}
-  .fld input, .fld textarea{width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:12px;
+  .fld input, .fld textarea, .fld select{width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:12px;
     background:var(--panel); font-size:15px; color:var(--ink); outline:none; font-family:inherit;}
   .fld textarea{resize:none; min-height:56px;}
   .fld-row{display:flex; gap:10px;}
@@ -451,6 +451,20 @@ const DATA = {
         facts:{"가공":"주로 워시드","고도":"900~1,300m","품종":"티피카·부르봉","성격":"순함·견과"},
         flavor:"견과·초콜릿, 순한 산미와 부드러운 바디. 저지대 로트는 특히 마일드하다.",
         about:"멕시코만 연안의 주. 멕시코 커피 재배 역사가 시작된 곳으로, 고도에 따라 마일드~균형형 커피가 난다." }
+    ]},
+    peru:{ name:"페루", intro:{"생산구조":"안데스 산악의 소농 중심. 협동조합·유기농 비중이 크고 근래 스페셜티로 급성장.", "등급":"주로 재배 고도·품질 기준. 통일 체계보다 수출업체·대회 평가 중심.", "대표성격":"부드러운 단맛·견과·감귤, 깔끔한 바디. 게이샤 등 고급 로트는 화사한 꽃·베리.", "가격·용도":"중가(대중~스페셜티). 유기농·블렌드부터 COE 게이샤 같은 고가 핸드드립까지 폭넓음."}, iso:"PER", center:[-9.2,-75], zoom:5, regions:[
+      { id:"cajamarca", region:"카하마르카 · Cajamarca", title:"카하마르카", coord:[-5.6,-78.8],
+        coordFlag:"카하마르카(치리노스 일대) 근사 중심점", tags:["basic","coe","flavor"], swatch:"#8fae5d", emoji:"🌸",
+        beanDesc:"북부 고산 산지. 소농·협동조합 중심으로 근래 게이샤 등 고급 품종 재배가 늘고 있음.",
+        facts:{"최근 COE":"La Lucuma 게이샤 2023 2위·2024 15위","가공":"워시드·내추럴","고도":"1,700~2,000m","품종":"카투라·부르봉·게이샤"},
+        flavor:"부드러운 단맛과 견과·감귤. 게이샤 로트는 꽃향·블루베리·딸기·복숭아의 화사한 컵.",
+        about:"페루 북부의 대표 커피주. 치리노스 등지의 소농이 협동조합을 이뤄 품질을 끌어올렸고, La Lucuma 농장(Franco Huaches)의 내추럴 게이샤가 2023 페루 COE 2위, 2024년 15위를 기록했다." },
+      { id:"cusco", region:"쿠스코 · Cusco", title:"쿠스코", coord:[-13.1,-72.0],
+        coordFlag:"쿠스코(라 콘벤시온) 근사 중심점", tags:["basic","flavor"], swatch:"#9c7b3d", emoji:"🍫",
+        beanDesc:"남부 안데스 고지 산지. 유기농 소농 중심.",
+        facts:{"가공":"주로 워시드","고도":"1,200~1,900m","품종":"티피카·부르봉·카투라","성격":"단맛·균형"},
+        flavor:"초콜릿·캐러멜의 단맛, 부드러운 산미와 둥근 바디. 안정적이고 균형 잡힌 프로파일.",
+        about:"마추픽추로 유명한 남부 쿠스코주의 라 콘벤시온 계곡 일대 산지. 유기농 소농 협동조합 커피가 많다." }
     ]}
   }},
   etc:{ label:"기타", center:[15,-60], zoom:2.4, countries:{
@@ -862,10 +876,11 @@ function openModal(rec){
     '<div class="score-total">총점 <b id="totalView">0</b>/100</div>'+
     '<div class="sec-label">커피 정보</div>'+
     '<div class="fld"><label>원두 이름</label><input id="f_name" value="'+(r.name||'')+'" placeholder="예: La Lucuma Geisha"></div>'+
-    '<div class="fld-row"><div class="fld"><label>나라</label><input id="f_country" value="'+(r.country||'')+'" placeholder="페루"></div>'+
+    '<div class="fld"><label>산지 선택 (앱 데이터)</label><select id="f_pick"></select></div>'+
+    '<div class="fld"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="f_manual" style="width:auto" '+(r.manual?'checked':'')+'> 직접 입력 (목록에 없을 때)</label></div>'+
+    '<div class="fld-row" id="manualRow" style="display:'+(r.manual?'flex':'none')+'"><div class="fld"><label>나라</label><input id="f_country" value="'+(r.country||'')+'" placeholder="페루"></div>'+
     '<div class="fld"><label>지역</label><input id="f_region" value="'+(r.region||'')+'" placeholder="치리노스, 카하마르카"></div></div>'+
-    '<div class="fld-row"><div class="fld"><label>위도(선택)</label><input id="f_lat" value="'+(r.lat||'')+'" placeholder="-5.3"></div>'+
-    '<div class="fld"><label>경도(선택)</label><input id="f_lng" value="'+(r.lng||'')+'" placeholder="-78.9"></div></div>'+
+    '<input type="hidden" id="f_lat" value="'+(r.lat||'')+'"><input type="hidden" id="f_lng" value="'+(r.lng||'')+'">'+
     '<div class="fld"><label>카페 / 로스터</label><input id="f_cafe" value="'+(r.cafe||'')+'" placeholder="마신 카페 이름"></div>'+
     '<div class="fld-row"><div class="fld"><label>가공</label><input id="f_process" value="'+(r.process||'')+'" placeholder="Natural"></div>'+
     '<div class="fld"><label>품종</label><input id="f_variety" value="'+(r.variety||'')+'" placeholder="Geisha"></div></div>'+
@@ -877,6 +892,24 @@ function openModal(rec){
     '<div class="fld" style="margin-top:10px"><label>메모</label><textarea id="f_memo" placeholder="한줄 평">'+(r.memo||'')+'</textarea></div>'+
     (rec?'<button class="btn-ghost" id="delBtn" style="width:100%;margin-top:4px;color:#b23b2e">이 기록 삭제</button>':'');
   updateTotal();
+  // 산지 셀렉트 채우기
+  buildPickOptions(r);
+  const pick=document.getElementById('f_pick');
+  const manual=document.getElementById('f_manual');
+  const manualRow=document.getElementById('manualRow');
+  manual.addEventListener('change',function(){
+    manualRow.style.display=this.checked?'flex':'none';
+    pick.disabled=this.checked;
+  });
+  pick.disabled=manual.checked;
+  pick.addEventListener('change',function(){
+    const opt=this.options[this.selectedIndex];
+    if(!opt.value) return;
+    document.getElementById('f_country').value=opt.dataset.country||'';
+    document.getElementById('f_region').value=opt.dataset.region||'';
+    document.getElementById('f_lat').value=opt.dataset.lat||'';
+    document.getElementById('f_lng').value=opt.dataset.lng||'';
+  });
   document.getElementById('modalScroll').querySelectorAll('input[type=range]').forEach(sl=>{
     sl.addEventListener('input',function(){
       document.getElementById('v_'+this.dataset.sca).textContent=parseFloat(this.value).toFixed(2);
@@ -890,6 +923,22 @@ function openModal(rec){
     }
   });
   document.getElementById('modalBg').classList.add('open');
+}
+function buildPickOptions(r){
+  const pick=document.getElementById('f_pick');
+  let html='<option value="">— 선택 안 함 —</option>';
+  for(const contKey in DATA){
+    const cont=DATA[contKey];
+    for(const ck in cont.countries){
+      const country=cont.countries[ck];
+      country.regions.forEach(rg=>{
+        const val=ck+'|'+rg.id;
+        const sel=(r.country===country.name && r.region===rg.region)?' selected':'';
+        html+='<option value="'+val+'"'+sel+' data-country="'+country.name+'" data-region="'+rg.region+'" data-lat="'+rg.coord[0]+'" data-lng="'+rg.coord[1]+'">'+country.name+' · '+rg.title+'</option>';
+      });
+    }
+  }
+  pick.innerHTML=html;
 }
 function updateTotal(){
   let sum=0;
@@ -914,6 +963,7 @@ document.getElementById('modalSave').addEventListener('click',function(){
     lat:g('f_lat'), lng:g('f_lng'),
     cafe:g('f_cafe'), process:g('f_process'), variety:g('f_variety'),
     altitude:g('f_altitude'), date:g('f_date'), coe:g('f_coe'),
+    manual:document.getElementById('f_manual').checked,
     notes:g('f_notes').split(',').map(s=>s.trim()).filter(Boolean),
     memo:g('f_memo'), scores, total:total.toFixed(2)
   };
