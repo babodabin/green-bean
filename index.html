@@ -152,6 +152,7 @@
   .modal-bg.open{display:flex;}
   .modal{background:var(--bg); width:100%; max-width:560px; max-height:92dvh; border-radius:22px 22px 0 0;
     display:flex; flex-direction:column; overflow:hidden;}
+  #detailModal{height:88dvh;}
   .modal-head{display:flex; justify-content:space-between; align-items:center; padding:18px 20px 12px; font-size:18px; font-weight:800;}
   .modal-close{width:30px; height:30px; border-radius:50%; background:var(--panel); border:1px solid var(--line);
     display:flex; align-items:center; justify-content:center; color:var(--sub); cursor:pointer;}
@@ -234,6 +235,17 @@
       <button class="btn-ghost" id="modalCancel">취소</button>
       <button class="btn-fill" id="modalSave">저장</button>
     </div>
+  </div>
+</div>
+
+<!-- 기록 상세 모달 (읽기 전용, 높이 큼) -->
+<div class="modal-bg" id="detailBg">
+  <div class="modal" id="detailModal">
+    <div class="modal-head">
+      <span>내 커핑 기록</span>
+      <div class="modal-close" id="detailClose">✕</div>
+    </div>
+    <div class="modal-scroll" id="detailBody"></div>
   </div>
 </div>
 
@@ -847,41 +859,26 @@ function renderList(){
     const notes=(r.notes||[]).map(n=>'<span class="ntag">'+n+'</span>').join('');
     const coe=r.coe&&r.coe.trim()?'<div class="rec-coe">🏆 '+r.coe+'</div>':'';
     const meta=[r.farm,r.cafe,r.roast,r.process,r.variety,r.altitude].filter(Boolean).join(' · ');
-    const hasLoc=r.lat&&r.lng;
-    const btns='<div class="rec-btns">'+
-      (hasLoc?'<button class="rb rb-map" data-act="map" data-id="'+r.id+'">📍 지도</button>':'')+
-      '<button class="rb rb-edit" data-act="edit" data-id="'+r.id+'">편집</button></div>';
-    return '<div class="rec" data-act="detail" data-id="'+r.id+'">'+
+    return '<div class="rec" data-id="'+r.id+'">'+
       '<div class="rec-top"><div><div class="rec-name">'+(r.name||'이름 없음')+'</div>'+
       '<div class="rec-origin">'+[r.country,r.region].filter(Boolean).join(' · ')+'</div></div>'+
       '<div class="rec-score"><b>'+(r.total||'-')+'</b><small>SCA</small></div></div>'+
       (meta?'<div class="rec-meta">'+meta+'</div>':'')+
       coe+
       (notes?'<div class="rec-notes">'+notes+'</div>':'')+
-      btns+
       '</div>';
   }).join('');
 }
 
-// 리스트 클릭: 카드=상세보기 / 버튼=지도·편집
+// 리스트 카드 클릭 → 상세창(별도 모달)
 document.getElementById('listBody').addEventListener('click',function(e){
-  const btn=e.target.closest('.rb');
-  if(btn){
-    const r=records.find(x=>x.id===btn.dataset.id); if(!r) return;
-    if(btn.dataset.act==='edit') openModal(r);
-    else if(btn.dataset.act==='map') gotoRecordOnMap(r);
-    return;
-  }
-  const card=e.target.closest('.rec[data-act="detail"]');
-  if(card){
-    const r=records.find(x=>x.id===card.dataset.id); if(!r) return;
-    openRecordDetail(r);
-  }
+  const card=e.target.closest('.rec'); if(!card) return;
+  const r=records.find(x=>x.id===card.dataset.id); if(!r) return;
+  openRecordDetail(r);
 });
 
-// 기록 상세 보기 (읽기 전용 시트)
+// 기록 상세 (리스트 위 별도 모달, 높이 크게, 지도 시트와 분리)
 function openRecordDetail(r){
-  const rows=[];
   const info=[["농장/농장주",r.farm],["카페/로스터",r.cafe],["로스팅",r.roast],
     ["가공",r.process],["품종",r.variety],["고도",r.altitude],["날짜",r.date]];
   const facts=info.filter(([k,v])=>v).map(([k,v])=>
@@ -892,48 +889,63 @@ function openRecordDetail(r){
     return '<div class="fact"><div class="k">'+it.label.split(' ')[0]+'</div><div class="v">'+v+'</div></div>';
   }).join('');
   const coe=r.coe&&r.coe.trim()?'<div class="note" style="margin-bottom:12px">🏆 '+r.coe+'</div>':'';
-  sheetIn.innerHTML=
+  const canMap=(r.cont&&r.ck&&r.rid)||(r.lat&&r.lng);
+  document.getElementById('detailBody').innerHTML=
+    // 위쪽: 지도에서 보기
+    (canMap?'<button class="rb rb-map" style="width:100%;margin-bottom:14px" onclick="gotoRecordOnMap(records.find(x=>x.id===\''+r.id+'\'))">📍 지도에서 보기</button>':'')+
     '<div class="sheet-region">'+[r.country,r.region].filter(Boolean).join(' · ')+'</div>'+
     '<div class="sheet-title">'+(r.name||'이름 없음')+'</div>'+
-    '<div class="sheet-badges"><span class="badge coe" style="background:var(--accent);color:#fff">SCA '+(r.total||'-')+'점</span></div>'+
+    '<div class="sheet-badges"><span class="badge" style="background:var(--accent);color:#fff">SCA '+(r.total||'-')+'점</span></div>'+
     coe+
     (facts?'<div class="facts">'+facts+'</div>':'')+
     (notes?'<p class="section-h">맛 노트</p><div class="rec-notes" style="margin-bottom:16px">'+notes+'</div>':'')+
     (r.memo?'<p class="section-h">메모</p><p class="body-t">'+r.memo+'</p>':'')+
     '<p class="section-h">커핑 점수 (SCA)</p><div class="facts">'+scaRows+'</div>'+
-    '<div class="rec-btns" style="margin-top:16px">'+
-      (r.lat&&r.lng?'<button class="rb rb-map" onclick="gotoRecordOnMap(records.find(x=>x.id===\''+r.id+'\'))">📍 지도에서 보기</button>':'')+
-      '<button class="rb rb-edit" onclick="openModal(records.find(x=>x.id===\''+r.id+'\'))">편집</button></div>';
-  sheetNav.innerHTML='';
-  sheetScroll.scrollTop=0;
-  // 리스트 모드에서도 시트가 보이도록
-  sheet.classList.add('open');
+    // 아래쪽: 편집
+    '<button class="rb rb-edit" style="width:100%;margin-top:18px" onclick="openModal(records.find(x=>x.id===\''+r.id+'\'))">편집</button>';
+  document.getElementById('detailBg').classList.add('open');
 }
+function closeDetail(){ document.getElementById('detailBg').classList.remove('open'); }
 
 // 기록의 위치로 지도 이동 (지도 모드로 전환 후 해당 좌표로)
 function gotoRecordOnMap(r){
-  if(!r.lat||!r.lng) return;
+  closeDetail();
   // 지도 모드로 전환
   document.querySelectorAll('.mode-btn').forEach(x=>x.classList.toggle('active',x.dataset.mode==='map'));
   document.getElementById('mapControls').style.display='';
   document.getElementById('map').style.display='';
   document.getElementById('searchbar').style.display='';
   document.getElementById('listScreen').classList.add('hidden');
-  setTimeout(()=>{
-    map.invalidateSize();
-    const lat=parseFloat(r.lat), lng=parseFloat(r.lng);
-    // 임시 마커로 표시
-    if(window._recMarker) map.removeLayer(window._recMarker);
-    window._recMarker=L.marker([lat,lng],{icon:L.divIcon({className:'',iconSize:[20,20],iconAnchor:[10,20],
-      html:'<div class="pin-dot" style="width:20px;height:20px;background:#b8863b"></div>'})}).addTo(map);
-    const z=8;
-    const mapH=document.getElementById('map').clientHeight;
-    const px=map.project([lat,lng],z);
-    const nc=map.unproject(px.add([0, mapH*0.20]),z);
-    map.setView(nc, z, {animate:true});
-    // 이동 후 기록 상세 시트 표시
-    openRecordDetail(r);
-  },120);
+
+  // 앱에 있는 산지면 대륙→국가→도시로 정식 진입
+  if(r.cont && r.ck && r.rid && DATA[r.cont] && DATA[r.cont].countries[r.ck]){
+    setTimeout(()=>{
+      map.invalidateSize();
+      // 대륙 탭 활성화
+      document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.cont===r.cont));
+      selectContinent(r.cont);
+      selectCountry(r.ck);
+      // 해당 산지 시트 열기
+      const region=DATA[r.cont].countries[r.ck].regions.find(x=>x.id===r.rid);
+      if(region) setTimeout(()=>openSheetByRegion(region),300);
+    },120);
+    return;
+  }
+  // 직접 입력 등 앱에 없는 산지 → 좌표로만 이동 + 임시 마커
+  if(r.lat&&r.lng){
+    setTimeout(()=>{
+      map.invalidateSize();
+      const lat=parseFloat(r.lat), lng=parseFloat(r.lng);
+      if(window._recMarker) map.removeLayer(window._recMarker);
+      window._recMarker=L.marker([lat,lng],{icon:L.divIcon({className:'',iconSize:[20,20],iconAnchor:[10,20],
+        html:'<div class="pin-dot" style="width:20px;height:20px;background:#b8863b"></div>'})}).addTo(map);
+      const z=8;
+      const mapH=document.getElementById('map').clientHeight;
+      const px=map.project([lat,lng],z);
+      const nc=map.unproject(px.add([0, mapH*0.20]),z);
+      map.setView(nc, z, {animate:true});
+    },120);
+  }
 }
 
 // 모달 열기(신규/편집)
@@ -956,6 +968,7 @@ function openModal(rec){
     '<div class="fld-row" id="manualRow" style="display:'+(r.manual?'flex':'none')+'"><div class="fld"><label>나라</label><input id="f_country" value="'+(r.country||'')+'" placeholder="페루"></div>'+
     '<div class="fld"><label>지역</label><input id="f_region" value="'+(r.region||'')+'" placeholder="치리노스, 카하마르카"></div></div>'+
     '<input type="hidden" id="f_lat" value="'+(r.lat||'')+'"><input type="hidden" id="f_lng" value="'+(r.lng||'')+'">'+
+    '<input type="hidden" id="f_cont" value="'+(r.cont||'')+'"><input type="hidden" id="f_ck" value="'+(r.ck||'')+'"><input type="hidden" id="f_rid" value="'+(r.rid||'')+'">'+
     '<div class="fld"><label>카페 / 로스터</label><input id="f_cafe" value="'+(r.cafe||'')+'" placeholder="마신 카페 이름"></div>'+
     '<div class="fld-row"><div class="fld"><label>농장 / 농장주</label><input id="f_farm" value="'+(r.farm||'')+'" placeholder="La Lucuma / Franco Huaches"></div>'+
     '<div class="fld"><label>로스팅</label><select id="f_roast">'+
@@ -983,11 +996,14 @@ function openModal(rec){
   pick.disabled=manual.checked;
   pick.addEventListener('change',function(){
     const opt=this.options[this.selectedIndex];
-    if(!opt.value) return;
+    if(!opt.value){ document.getElementById('f_cont').value=''; document.getElementById('f_ck').value=''; document.getElementById('f_rid').value=''; return; }
     document.getElementById('f_country').value=opt.dataset.country||'';
     document.getElementById('f_region').value=opt.dataset.region||'';
     document.getElementById('f_lat').value=opt.dataset.lat||'';
     document.getElementById('f_lng').value=opt.dataset.lng||'';
+    document.getElementById('f_cont').value=opt.dataset.cont||'';
+    document.getElementById('f_ck').value=opt.dataset.ck||'';
+    document.getElementById('f_rid').value=opt.dataset.rid||'';
   });
   document.getElementById('modalScroll').querySelectorAll('input[type=range]').forEach(sl=>{
     sl.addEventListener('input',function(){
@@ -1012,8 +1028,8 @@ function buildPickOptions(r){
       const country=cont.countries[ck];
       country.regions.forEach(rg=>{
         const val=ck+'|'+rg.id;
-        const sel=(r.country===country.name && r.region===rg.region)?' selected':'';
-        html+='<option value="'+val+'"'+sel+' data-country="'+country.name+'" data-region="'+rg.region+'" data-lat="'+rg.coord[0]+'" data-lng="'+rg.coord[1]+'">'+country.name+' · '+rg.title+'</option>';
+        const sel=(r.rid===rg.id && r.ck===ck)?' selected':'';
+        html+='<option value="'+val+'"'+sel+' data-cont="'+contKey+'" data-ck="'+ck+'" data-rid="'+rg.id+'" data-country="'+country.name+'" data-region="'+rg.region+'" data-lat="'+rg.coord[0]+'" data-lng="'+rg.coord[1]+'">'+country.name+' · '+rg.title+'</option>';
       });
     }
   }
@@ -1040,6 +1056,7 @@ document.getElementById('modalSave').addEventListener('click',function(){
     id: editingId||('r'+Date.now()),
     name:g('f_name'), country:g('f_country'), region:g('f_region'),
     lat:g('f_lat'), lng:g('f_lng'),
+    cont:g('f_cont'), ck:g('f_ck'), rid:g('f_rid'),
     cafe:g('f_cafe'), farm:g('f_farm'),
     roast:(function(){const v=document.getElementById('f_roast').value; return v.startsWith('—')?'':v;})(),
     process:g('f_process'), variety:g('f_variety'),
@@ -1052,6 +1069,9 @@ document.getElementById('modalSave').addEventListener('click',function(){
   else{ records.push(rec); }
   saveRecords(); renderList(); closeModal();
 });
+
+document.getElementById('detailClose').addEventListener('click',closeDetail);
+document.getElementById('detailBg').addEventListener('click',function(e){ if(e.target===this) closeDetail(); });
 
 loadRecords();
 </script>
