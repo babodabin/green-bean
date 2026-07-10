@@ -136,6 +136,10 @@
   .rec-notes{display:flex; gap:5px; flex-wrap:wrap; margin-top:10px;}
   .ntag{font-size:11px; font-weight:700; padding:4px 9px; border-radius:8px; background:var(--bg); color:var(--accent); border:1px solid var(--line);}
   .rec-coe{display:inline-block; font-size:11px; font-weight:800; color:var(--gold); background:#f5ecdb; padding:3px 8px; border-radius:7px; margin-top:8px;}
+  .rec-btns{display:flex; gap:8px; margin-top:12px;}
+  .rb{flex:1; padding:10px; border-radius:11px; font-size:13px; font-weight:700; cursor:pointer; border:1px solid var(--line);}
+  .rb-map{background:var(--accent); color:#fff; border-color:var(--accent);}
+  .rb-edit{background:var(--bg); color:var(--sub);}
   .list-empty{text-align:center; color:var(--sub); font-size:14px; padding:60px 20px; line-height:1.7;}
 
   .fab{position:absolute; left:50%; transform:translateX(-50%); bottom:calc(18px + env(safe-area-inset-bottom));
@@ -842,24 +846,54 @@ function renderList(){
   body.innerHTML=list.map(r=>{
     const notes=(r.notes||[]).map(n=>'<span class="ntag">'+n+'</span>').join('');
     const coe=r.coe&&r.coe.trim()?'<div class="rec-coe">🏆 '+r.coe+'</div>':'';
-    const meta=[r.cafe,r.process,r.variety,r.altitude].filter(Boolean).join(' · ');
-    return '<div class="rec" data-id="'+r.id+'">'+
+    const meta=[r.farm,r.cafe,r.roast,r.process,r.variety,r.altitude].filter(Boolean).join(' · ');
+    const hasLoc=r.lat&&r.lng;
+    const btns='<div class="rec-btns">'+
+      (hasLoc?'<button class="rb rb-map" data-act="map" data-id="'+r.id+'">📍 지도에서 보기</button>':'')+
+      '<button class="rb rb-edit" data-act="edit" data-id="'+r.id+'">편집</button></div>';
+    return '<div class="rec">'+
       '<div class="rec-top"><div><div class="rec-name">'+(r.name||'이름 없음')+'</div>'+
       '<div class="rec-origin">'+[r.country,r.region].filter(Boolean).join(' · ')+'</div></div>'+
       '<div class="rec-score"><b>'+(r.total||'-')+'</b><small>SCA</small></div></div>'+
       (meta?'<div class="rec-meta">'+meta+'</div>':'')+
       coe+
       (notes?'<div class="rec-notes">'+notes+'</div>':'')+
+      btns+
       '</div>';
   }).join('');
 }
 
-// 리스트 카드 클릭 → 편집 or 지도이동
+// 리스트 카드 버튼: 편집 or 지도이동
 document.getElementById('listBody').addEventListener('click',function(e){
-  const card=e.target.closest('.rec'); if(!card) return;
-  const r=records.find(x=>x.id===card.dataset.id); if(!r) return;
-  openModal(r);
+  const btn=e.target.closest('.rb'); if(!btn) return;
+  const r=records.find(x=>x.id===btn.dataset.id); if(!r) return;
+  if(btn.dataset.act==='edit'){ openModal(r); }
+  else if(btn.dataset.act==='map'){ gotoRecordOnMap(r); }
 });
+
+// 기록의 위치로 지도 이동 (지도 모드로 전환 후 해당 좌표로)
+function gotoRecordOnMap(r){
+  if(!r.lat||!r.lng) return;
+  // 지도 모드로 전환
+  document.querySelectorAll('.mode-btn').forEach(x=>x.classList.toggle('active',x.dataset.mode==='map'));
+  document.getElementById('mapControls').style.display='';
+  document.getElementById('map').style.display='';
+  document.getElementById('searchbar').style.display='';
+  document.getElementById('listScreen').classList.add('hidden');
+  setTimeout(()=>{
+    map.invalidateSize();
+    const lat=parseFloat(r.lat), lng=parseFloat(r.lng);
+    // 임시 마커로 표시
+    if(window._recMarker) map.removeLayer(window._recMarker);
+    window._recMarker=L.marker([lat,lng],{icon:L.divIcon({className:'',iconSize:[20,20],iconAnchor:[10,20],
+      html:'<div class="pin-dot" style="width:20px;height:20px;background:#b8863b"></div>'})}).addTo(map);
+    const z=8;
+    const mapH=document.getElementById('map').clientHeight;
+    const px=map.project([lat,lng],z);
+    const nc=map.unproject(px.add([0, mapH*0.12]),z);
+    map.setView(nc, z, {animate:true});
+  },120);
+}
 
 // 모달 열기(신규/편집)
 function openModal(rec){
@@ -882,6 +916,10 @@ function openModal(rec){
     '<div class="fld"><label>지역</label><input id="f_region" value="'+(r.region||'')+'" placeholder="치리노스, 카하마르카"></div></div>'+
     '<input type="hidden" id="f_lat" value="'+(r.lat||'')+'"><input type="hidden" id="f_lng" value="'+(r.lng||'')+'">'+
     '<div class="fld"><label>카페 / 로스터</label><input id="f_cafe" value="'+(r.cafe||'')+'" placeholder="마신 카페 이름"></div>'+
+    '<div class="fld-row"><div class="fld"><label>농장 / 농장주</label><input id="f_farm" value="'+(r.farm||'')+'" placeholder="La Lucuma / Franco Huaches"></div>'+
+    '<div class="fld"><label>로스팅</label><select id="f_roast">'+
+      ['','Light','Medium-Light','Medium','Medium-Dark','Dark'].map(x=>'<option'+(r.roast===x?' selected':'')+'>'+(x||'— 선택 —')+'</option>').join('')+
+    '</select></div></div>'+
     '<div class="fld-row"><div class="fld"><label>가공</label><input id="f_process" value="'+(r.process||'')+'" placeholder="Natural"></div>'+
     '<div class="fld"><label>품종</label><input id="f_variety" value="'+(r.variety||'')+'" placeholder="Geisha"></div></div>'+
     '<div class="fld-row"><div class="fld"><label>고도</label><input id="f_altitude" value="'+(r.altitude||'')+'" placeholder="1,850~1,900m"></div>'+
@@ -961,7 +999,9 @@ document.getElementById('modalSave').addEventListener('click',function(){
     id: editingId||('r'+Date.now()),
     name:g('f_name'), country:g('f_country'), region:g('f_region'),
     lat:g('f_lat'), lng:g('f_lng'),
-    cafe:g('f_cafe'), process:g('f_process'), variety:g('f_variety'),
+    cafe:g('f_cafe'), farm:g('f_farm'),
+    roast:(function(){const v=document.getElementById('f_roast').value; return v.startsWith('—')?'':v;})(),
+    process:g('f_process'), variety:g('f_variety'),
     altitude:g('f_altitude'), date:g('f_date'), coe:g('f_coe'),
     manual:document.getElementById('f_manual').checked,
     notes:g('f_notes').split(',').map(s=>s.trim()).filter(Boolean),
