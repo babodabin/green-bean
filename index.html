@@ -849,9 +849,9 @@ function renderList(){
     const meta=[r.farm,r.cafe,r.roast,r.process,r.variety,r.altitude].filter(Boolean).join(' · ');
     const hasLoc=r.lat&&r.lng;
     const btns='<div class="rec-btns">'+
-      (hasLoc?'<button class="rb rb-map" data-act="map" data-id="'+r.id+'">📍 지도에서 보기</button>':'')+
+      (hasLoc?'<button class="rb rb-map" data-act="map" data-id="'+r.id+'">📍 지도</button>':'')+
       '<button class="rb rb-edit" data-act="edit" data-id="'+r.id+'">편집</button></div>';
-    return '<div class="rec">'+
+    return '<div class="rec" data-act="detail" data-id="'+r.id+'">'+
       '<div class="rec-top"><div><div class="rec-name">'+(r.name||'이름 없음')+'</div>'+
       '<div class="rec-origin">'+[r.country,r.region].filter(Boolean).join(' · ')+'</div></div>'+
       '<div class="rec-score"><b>'+(r.total||'-')+'</b><small>SCA</small></div></div>'+
@@ -863,13 +863,52 @@ function renderList(){
   }).join('');
 }
 
-// 리스트 카드 버튼: 편집 or 지도이동
+// 리스트 클릭: 카드=상세보기 / 버튼=지도·편집
 document.getElementById('listBody').addEventListener('click',function(e){
-  const btn=e.target.closest('.rb'); if(!btn) return;
-  const r=records.find(x=>x.id===btn.dataset.id); if(!r) return;
-  if(btn.dataset.act==='edit'){ openModal(r); }
-  else if(btn.dataset.act==='map'){ gotoRecordOnMap(r); }
+  const btn=e.target.closest('.rb');
+  if(btn){
+    const r=records.find(x=>x.id===btn.dataset.id); if(!r) return;
+    if(btn.dataset.act==='edit') openModal(r);
+    else if(btn.dataset.act==='map') gotoRecordOnMap(r);
+    return;
+  }
+  const card=e.target.closest('.rec[data-act="detail"]');
+  if(card){
+    const r=records.find(x=>x.id===card.dataset.id); if(!r) return;
+    openRecordDetail(r);
+  }
 });
+
+// 기록 상세 보기 (읽기 전용 시트)
+function openRecordDetail(r){
+  const rows=[];
+  const info=[["농장/농장주",r.farm],["카페/로스터",r.cafe],["로스팅",r.roast],
+    ["가공",r.process],["품종",r.variety],["고도",r.altitude],["날짜",r.date]];
+  const facts=info.filter(([k,v])=>v).map(([k,v])=>
+    '<div class="fact"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>').join('');
+  const notes=(r.notes||[]).map(n=>'<span class="ntag">'+n+'</span>').join('');
+  const scaRows=SCA_ITEMS.map(it=>{
+    const v=(r.scores&&r.scores[it.k]!=null)?r.scores[it.k].toFixed(2):'-';
+    return '<div class="fact"><div class="k">'+it.label.split(' ')[0]+'</div><div class="v">'+v+'</div></div>';
+  }).join('');
+  const coe=r.coe&&r.coe.trim()?'<div class="note" style="margin-bottom:12px">🏆 '+r.coe+'</div>':'';
+  sheetIn.innerHTML=
+    '<div class="sheet-region">'+[r.country,r.region].filter(Boolean).join(' · ')+'</div>'+
+    '<div class="sheet-title">'+(r.name||'이름 없음')+'</div>'+
+    '<div class="sheet-badges"><span class="badge coe" style="background:var(--accent);color:#fff">SCA '+(r.total||'-')+'점</span></div>'+
+    coe+
+    (facts?'<div class="facts">'+facts+'</div>':'')+
+    (notes?'<p class="section-h">맛 노트</p><div class="rec-notes" style="margin-bottom:16px">'+notes+'</div>':'')+
+    (r.memo?'<p class="section-h">메모</p><p class="body-t">'+r.memo+'</p>':'')+
+    '<p class="section-h">커핑 점수 (SCA)</p><div class="facts">'+scaRows+'</div>'+
+    '<div class="rec-btns" style="margin-top:16px">'+
+      (r.lat&&r.lng?'<button class="rb rb-map" onclick="gotoRecordOnMap(records.find(x=>x.id===\''+r.id+'\'))">📍 지도에서 보기</button>':'')+
+      '<button class="rb rb-edit" onclick="openModal(records.find(x=>x.id===\''+r.id+'\'))">편집</button></div>';
+  sheetNav.innerHTML='';
+  sheetScroll.scrollTop=0;
+  // 리스트 모드에서도 시트가 보이도록
+  sheet.classList.add('open');
+}
 
 // 기록의 위치로 지도 이동 (지도 모드로 전환 후 해당 좌표로)
 function gotoRecordOnMap(r){
@@ -890,8 +929,10 @@ function gotoRecordOnMap(r){
     const z=8;
     const mapH=document.getElementById('map').clientHeight;
     const px=map.project([lat,lng],z);
-    const nc=map.unproject(px.add([0, mapH*0.12]),z);
+    const nc=map.unproject(px.add([0, mapH*0.20]),z);
     map.setView(nc, z, {animate:true});
+    // 이동 후 기록 상세 시트 표시
+    openRecordDetail(r);
   },120);
 }
 
