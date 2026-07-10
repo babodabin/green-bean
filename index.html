@@ -150,6 +150,7 @@
   .modal-bg{position:fixed; inset:0; background:rgba(40,28,18,.5); z-index:2000; display:none;
     align-items:flex-end; justify-content:center;}
   .modal-bg.open{display:flex;}
+  #modalBg{z-index:2100;}
   .modal{background:var(--bg); width:100%; max-width:560px; max-height:92dvh; border-radius:22px 22px 0 0;
     display:flex; flex-direction:column; overflow:hidden;}
   #detailModal{height:88dvh;}
@@ -185,7 +186,7 @@
 <div id="app">
   <header>
     <div class="brand">
-      <div><h1>커피산지</h1><span>Coffee Origins</span></div>
+      <div><h1>커피산지</h1><span>Coffee Origins <b style="font-weight:600;color:#b9ab99">v1.0</b></span></div>
       <div class="mode-switch" id="modeSwitch">
         <div class="mode-btn active" data-mode="map">지도</div>
         <div class="mode-btn" data-mode="list">내 리스트</div>
