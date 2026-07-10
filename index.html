@@ -902,7 +902,7 @@ function openRecordDetail(r){
     (r.memo?'<p class="section-h">메모</p><p class="body-t">'+r.memo+'</p>':'')+
     '<p class="section-h">커핑 점수 (SCA)</p><div class="facts">'+scaRows+'</div>'+
     // 아래쪽: 편집
-    '<button class="rb rb-edit" style="width:100%;margin-top:18px" onclick="openModal(records.find(x=>x.id===\''+r.id+'\'))">편집</button>';
+    '<button class="rb rb-edit" style="width:100%;margin-top:18px" onclick="closeDetail();openModal(records.find(x=>x.id===\''+r.id+'\'))">편집</button>';
   document.getElementById('detailBg').classList.add('open');
 }
 function closeDetail(){ document.getElementById('detailBg').classList.remove('open'); }
